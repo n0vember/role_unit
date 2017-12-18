@@ -4,32 +4,55 @@
 usage() {
   my_name=$(basename $0)
   [ $# -gt 0 ] && echo "$@" >&2
-  echo "usage : ${my_name} ROLE_NAME
-  creates a ROLE_NAME directory in the current directory, with a dummy role and unit tests embeded" >&2
+  echo "usage : ${my_name} [ -v|--verbose ] [ -h|--help ] ROLE_NAME ...
+  creates a ROLE_NAME directory in the current directory, with a dummy role and unit tests embeded.
+  if multiple role names are specified a role directory will be created for each.
+  -v|--verbose : activates verbose mode
+     -h|--help : displays this help" >&2
   exit 1
 }
 
 create_an_ansible_role() {
   local role_name=$1
   # Create empty role
-  mkdir -p ${role_name}/tasks
-  touch ${role_name}/tasks/main.yml
+  mkdir ${verbose_flag} -p ${role_name}/{tasks,meta}
+  [ ! -f ${role_name}/tasks/main.yml ] && cp ${verbose_flag} ${role_unit_dir}/role_files/tasks ${role_name}/tasks/main.yml
   # Dependencies to make role usable by ansible-galaxy
-  [ ! -d ${role_name}/meta ] && mkdir ${role_name}/meta
-  [ ! -f ${role_name}/meta/main.yml ] && echo "dependencies: []" > ${role_name}/meta/main.yml
+  [ ! -f ${role_name}/meta/main.yml ] && cp ${verbose_flag} ${role_unit_dir}/role_files/meta ${role_name}/meta/main.yml
 }
 
 make_directory_testable() {
   local role_name=$1
   # Testing environment
-  mkdir -p ${role_name}/tests
-  cp ${role_unit_dir}/tools/bash_unit ${role_name}/tests
-  cp -r ${role_unit_dir}/lib ${role_name}/tests
-  [ ! -f ${role_name}/tests/ansible.cfg ] && cp ${role_unit_dir}/tools/ansible.cfg ${role_name}/tests
-  [ ! -f ${role_name}/tests/tests_${role_name} ] && cp ${role_unit_dir}/tools/tests ${role_name}/tests/tests_${role_name}
+  mkdir ${verbose_flag} -p ${role_name}/tests
+  cp ${verbose_flag} ${role_unit_dir}/tools/bash_unit ${role_name}/tests
+  cp ${verbose_flag} -r ${role_unit_dir}/lib ${role_name}/tests
+  [ ! -f ${role_name}/tests/ansible.cfg ] && cp ${verbose_flag} ${role_unit_dir}/tools/ansible.cfg ${role_name}/tests
+  [ ! -f ${role_name}/tests/tests_${role_name} ] && cp ${verbose_flag} ${role_unit_dir}/tools/tests ${role_name}/tests/tests_${role_name}
 }
 
 # Check parameters
+getopt -o vh --long verbose,help -n 'option parsing' -- "$@" > /dev/null
+[ $? != 0 ] && usage "Failed parsing options."
+
+verbose_mode=false
+verbose_flag=
+
+while true; do
+  case "$1" in
+    -v | --verbose )
+      verbose_mode=true
+      verbose_flag="-v"
+      shift
+      ;;
+    -h | --help )
+      usage
+      ;;
+    -- ) shift; break ;;
+    * ) break ;;
+  esac
+done
+
 [ $# -lt 1 ] && usage "role name is mandatory"
 
 # Set readlink option. -e is not available on all systems
