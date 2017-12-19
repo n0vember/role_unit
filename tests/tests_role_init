@@ -62,7 +62,7 @@ role_test_by_name() {
 
 role_foo_verbose_creation() {
   cat <<EOF
-mkdir: created directory 'foo'
+mkdir: created directory 'foo/'
 mkdir: created directory 'foo/tasks'
 mkdir: created directory 'foo/meta'
 '/home/fruffet/git/role_unit/role_files/tasks' -> 'foo/tasks/main.yml'

@@ -15,7 +15,7 @@ usage() {
 create_an_ansible_role() {
   local role_name=$1
   # Create empty role
-  mkdir ${verbose_flag} -p ${role_name}/{tasks,meta}
+  mkdir ${verbose_flag} -p ${role_name}/{,tasks,meta}
   [ ! -f ${role_name}/tasks/main.yml ] && cp ${verbose_flag} ${role_unit_dir}/role_files/tasks ${role_name}/tasks/main.yml
   # Dependencies to make role usable by ansible-galaxy
   [ ! -f ${role_name}/meta/main.yml ] && cp ${verbose_flag} ${role_unit_dir}/role_files/meta ${role_name}/meta/main.yml
