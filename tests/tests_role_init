@@ -30,7 +30,7 @@ test_i_can_create_two_roles_at_once() {
 
 test_invalid_option_is_rejected() {
   local role_init_output=$(cd ${tmp_dir} ; LC_ALL=C ${role_init_dir}/role_init --invalid-option 2>&1 | head -1)
-  assert_equals "option parsing: unrecognized option '--invalid-option'" "${role_init_output}"
+  assert_equals "option parsing: unrecognized option" "${role_init_output}"
 }
 
 test_verbose_flag_makes_output_verbose() {
