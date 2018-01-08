@@ -34,9 +34,7 @@ test_invalid_option_is_rejected() {
 }
 
 test_verbose_flag_makes_output_verbose() {
-  local role_init_output=$(cd ${tmp_dir} ; LC_ALL=C ${role_init_dir}/role_init -v foo 2>&1)
-  local expected_output=$(role_foo_verbose_creation)
-  assert_equals "${expected_output}" "${role_init_output}"
+  assert "cd ${tmp_dir} ; LC_ALL=C ${role_init_dir}/role_init -v foo 2>&1 | grep \"created directory 'foo/'\""
 }
 
 setup() {
@@ -58,23 +56,6 @@ role_test_by_name() {
   # check result
   assert_equals "1" "${success_result}"
   assert_equals "1" "${failing_result}"
-}
-
-role_foo_verbose_creation() {
-  cat <<EOF
-mkdir: created directory 'foo/'
-mkdir: created directory 'foo/tasks'
-mkdir: created directory 'foo/meta'
-'/home/fruffet/git/role_unit/role_files/tasks' -> 'foo/tasks/main.yml'
-'/home/fruffet/git/role_unit/role_files/meta' -> 'foo/meta/main.yml'
-mkdir: created directory 'foo/tests'
-'/home/fruffet/git/role_unit/tools/bash_unit' -> 'foo/tests/bash_unit'
-'/home/fruffet/git/role_unit/lib' -> 'foo/tests/lib'
-'/home/fruffet/git/role_unit/lib/role_unit_docker' -> 'foo/tests/lib/role_unit_docker'
-'/home/fruffet/git/role_unit/lib/role_unit' -> 'foo/tests/lib/role_unit'
-'/home/fruffet/git/role_unit/tools/ansible.cfg' -> 'foo/tests/ansible.cfg'
-'/home/fruffet/git/role_unit/tools/tests' -> 'foo/tests/tests_foo'
-EOF
 }
 
 # vim: syntax=sh
