@@ -28,6 +28,14 @@ test_i_can_create_two_roles_at_once() {
   role_test_by_name ${tst_role_name}_2
 }
 
+test_invalid_option_is_rejected() {
+  assert "cd ${tmp_dir} ; LC_ALL=C ${role_init_dir}/role_init --invalid-option 2>&1 | grep 'option parsing: unrecognized option'"
+}
+
+test_verbose_flag_makes_output_verbose() {
+  assert "(cd ${tmp_dir} ; LC_ALL=C ${role_init_dir}/role_init -v foo 2>&1) | grep 'created directory:* .foo/.'"
+}
+
 setup() {
   mkdir -p ${tmp_dir}
 }
