@@ -33,11 +33,6 @@ test_invalid_option_is_rejected() {
 }
 
 test_verbose_flag_makes_output_verbose() {
-  echo =====
-  cd ${tmp_dir} ; LC_ALL=C ${role_init_dir}/role_init -v foo 2>&1
-  echo =====
-  (cd ${tmp_dir} ; LC_ALL=C ${role_init_dir}/role_init -v foo 2>&1) | grep 'created directory:* .foo/.'
-  echo =====
   assert "(cd ${tmp_dir} ; LC_ALL=C ${role_init_dir}/role_init -v foo 2>&1) | grep 'created directory:* .foo/.'"
 }
 
