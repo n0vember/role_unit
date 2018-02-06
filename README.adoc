@@ -22,6 +22,8 @@ cd /my/ansible/dir/roles
 
 This will create an empty role with the testing tools in the tests directory. A default tests file is created that run on the default container (debian9). To adapt the used distribution set the RU_ENV_IMAGE variable (see below).
 
+The tests directory is a standard ansible structure : if you place a group_vars directory it will be used.
+
 You have a list of functions you can call in your test file, described below.
 
 === ru_init
