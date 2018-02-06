@@ -4,9 +4,10 @@ image:https://gitlab.com/role_unit/role_unit/badges/master/pipeline.svg[link="ht
 
 The goal of this project is to test your ansible system automation. Its goal is basically to test ansible roles, but role_unit's own tests are an example of an other usage that can be made.
 
+Role_unit is based on https://github.com/pgrange/bash_unit[bash_unit], a bash unit-testing framework. The first provides the second a controlled environment for reproductible testing over multiple environments.
+
 == prerequisites
 
-* https://github.com/pgrange/bash_unit[bash_unit]
 * docker
 * ansible
 
