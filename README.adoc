@@ -13,7 +13,7 @@ Role_unit is based on https://github.com/pgrange/bash_unit[bash_unit], a bash un
 
 == usage
 
-To create a new role tested with role_unit, place yourself in the directory where you want the role and run role_unit:
+To create a new role tested with role_unit, place yourself in the directory where you want the role and run role_init:
 
 ----
 cd /my/ansible/dir/roles
