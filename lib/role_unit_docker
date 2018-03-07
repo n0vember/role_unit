@@ -90,11 +90,13 @@ ru_init() {
 
 ru_run() {
   local ru_servers=$(ru_servers)
+  local ru_background_option
+  [ "$1" == "-d" ] && ru_background_option="-d" && shift
   [ "$1" == "-n" ] && ru_servers=$(ru_server $2) && shift 2
   for ru_server in ${ru_servers}
   do
     local ru_server_name=${ru_servers_names[${ru_server}]}
-    docker exec -i ${ru_server_name} "$@"
+    docker exec ${ru_background_option} -i ${ru_server_name} "$@"
   done
 }
 
