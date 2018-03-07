@@ -65,13 +65,13 @@ EOF
 getopt -o vh --long verbose,help -n 'option parsing' -- "$@" > /dev/null
 [ $? != 0 ] && usage "Failed parsing options."
 
-verbose_mode=false
+verbose_mode=0
 verbose_flag=
 
 while true; do
   case "$1" in
     -v | --verbose )
-      verbose_mode=true
+      verbose_mode=1
       verbose_flag="-v"
       shift
       ;;
@@ -97,6 +97,6 @@ while [ $# -ge 1 ]
 do
   create_an_ansible_role $1
   make_directory_testable $1
-  explain $1
+  [ ${verbose_mode} -eq 1 ] && explain $1
   shift
 done
