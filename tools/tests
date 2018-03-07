@@ -6,10 +6,12 @@
 # RU_ENV_IMAGE=centos7
 # Or as environment variable in the shell launching the tests
 
+# FOR MORE DOCUMENTATION, READ THE tests_tuto FILE IN THE tests DIRECTORY
+
 . lib/role_unit
 
-test_that_fails() {
-  assert "ru_run false"
+test_that_succeeds_in_failure() {
+  assert_fails "ru_run false"
 }
 
 test_that_succeeds() {
