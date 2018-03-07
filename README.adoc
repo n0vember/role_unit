@@ -38,9 +38,11 @@ Initiates ansible inventory and playbook necessary to test your ansible role.
 
 Actually run ansible-playbook on your testing environment.
 
-=== ru_run [ -n N ] cmd ...
+=== ru_run [ -d ] [ -n N ] cmd ...
 
 Runs the specified command on all of the servers or just on the one specified. N is the number of the server you want to run the command on.
+
+If you specify -d option, this will launch command in a detached mode. There may be evolution in the future about that but for now those options must be sepcified in this order only.
 
 === ru_ansible_fact [ -n N ] fact_name...
 
