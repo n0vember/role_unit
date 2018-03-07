@@ -1,0 +1,85 @@
+#!/usr/bin/env bash_unit
+
+# THIS FILE IS HERE AS A CHEATSHEET. YOU CAN GET BACK HERE FOR HELP AND WRITE YOUR OWN TEST FILES.
+
+# You MUST specify an image on wich to run your tests using RU_ENV_IMAGE variable.
+# It is done either here :
+RU_ENV_IMAGE=debian9
+# RU_ENV_IMAGE=centos7
+# Or as environment variable in the shell launching the tests
+
+# There are other environment variables that can be set :
+
+# RU_DEBUG=1
+# uncommenting this line will result in testing environment not to be dropped at the end.
+# you will then be able to inspect what has been done or what went wrong
+
+RU_ENV_NAME=tuto
+# this is pure cosmetics. From this will depend the internal naming of the testing infrastructure
+# and how the role is called during the tests.
+
+RU_COUNT=2
+# This will set how many machines/containers you have in your testing environment. Default is 1.
+
+RU_ENV_DOCKER_REPO="registry.gitlab.com/role_unit/role_unit_containers"
+# Where you want to get your images from
+
+# Once environment is set, source the role_unit library.
+
+. lib/role_unit
+
+# Now that we are done with environment, let's start testing
+
+# The first three tests are a bash_unit basic
+# it will help with the testing tool
+# more help can be found here : https://github.com/pgrange/bash_unit
+
+test_that_succeeds() {
+  assert "true"
+}
+
+test_that_succeeds_in_failure() {
+  assert_fails "false"
+}
+
+test_that_compares() {
+  assert_equals "1" "1" "1 should equal 1"
+  assert_not_equals "0" "1" "1 should not equal 0"
+}
+
+# Next we will use some role unit functions
+
+test_ru_run() {
+  assert "ru_run echo" "echo on all machines/containers"
+  assert "ru_run -n 0 echo" "echo on first machine/container only"
+  assert "ru_run -d echo" "echo in background and do not wait for completion"
+}
+
+test_servers_and_names() {
+  assert_equals "ru_tuto_00" "$(ru_server 0)" "ru_server gives you the logical name of one server"
+  assert_equals "ru_tuto_00 ru_tuto_01" "$(ru_servers | xargs)" \
+    "ru_servers gives you the logical name of all servers"
+  assert "ru_server_name 0" "this returns the real name of the first machine/container"
+  assert "ru_server_names" "this returns the real names of all the machines/containers"
+}
+
+test_ansible() {
+  assert_equals "docker" "$(ru_ansible_fact -n 0 ansible_virtualization_type)" \
+    "ru_ansible_fact gives you a fact on one or all machines"
+}
+
+# Setup suite initiates the environment
+
+setup_suite() {
+  # I told we were finished with mandatory things.
+  # In a way I lied.
+  # You won't go far without those lines
+  ru_init # this launches the environment test
+  # Optionaly define your role's variables instead of creating one in the tests directory
+  cat > ${ru_ansible_dir}/group_vars/all.yml <<EOF
+a_variable: "a value"
+EOF
+  ru_run_ansible # And this launches ansible
+}
+
+# vim: syntax=sh
