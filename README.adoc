@@ -56,6 +56,7 @@ there is only one mandatory environment variable, which is RU_ENV_IMAGE. It defi
 * debian 8 (jessie)
 * centos 7
 * centos 6
+* archlinux
 
 role_unit behaviour can be changed using environment variables:
 
