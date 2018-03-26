@@ -23,7 +23,6 @@ ru_debug=0
 ### User environment
 
 [ -n "$RU_ENV_DOCKER_REPO" ] && ru_env_docker_repo="$RU_ENV_DOCKER_REPO"
-[ -n "$RU_DEBUG" ] && ru_debug="$RU_DEBUG"
 
 ### Global functions
 
