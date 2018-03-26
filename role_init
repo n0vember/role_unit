@@ -46,6 +46,9 @@ make_directory_testable() {
   cp ${verbose_flag} -r ${role_unit_dir}/lib ${role_name}/tests
   [ ! -f ${role_name}/tests/ansible.cfg ] && cp ${verbose_flag} ${role_unit_dir}/tools/ansible.cfg ${role_name}/tests
   [ ! -f ${role_name}/tests/tests_${role_name} ] && cp ${verbose_flag} ${role_unit_dir}/tools/tests ${role_name}/tests/tests_${role_name}
+  [ ! -f ${role_name}/.gitlab-ci.yml ] \
+    && cp ${verbose_flag} ${role_unit_dir}/tools/.gitlab-ci.yml ${role_name}/.gitlab-ci.yml \
+    && sed -i "s:ROLE_NAME:${role_name}:g" ${role_name}/.gitlab-ci.yml
   cp ${verbose_flag} ${role_unit_dir}/tools/tests_tuto ${role_name}/tests/tests_tuto
 }
 

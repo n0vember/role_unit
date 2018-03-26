@@ -1,0 +1,19 @@
+image: registry.gitlab.com/role_unit/role_unit_containers:build
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DEBIAN_FRONTEND: noninteractive
+
+services:
+- docker:dind
+
+# Tests model
+
+.test_template: &test_definition
+  script:
+    - RU_ENV_IMAGE=${CI_JOB_NAME/*_/} tests/bash_unit tests/tests_ROLE_NAME
+
+# Test jobs
+
+single_debian9:
+  <<: *test_definition
