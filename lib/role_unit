@@ -23,12 +23,15 @@ ru_env_image="debian9"
 ru_count=1
 ru_debug=0
 
+ru_conf_file_name="ru.conf"
+
 ### User environment
 
 [ -n "$RU_ENV_NAME" ] && ru_env_name="$RU_ENV_NAME"
 [ -n "$RU_ENV_IMAGE" ] && ru_env_image="$RU_ENV_IMAGE"
 [ -n "$RU_COUNT" ] && ru_count="$RU_COUNT"
 [ -n "$RU_DEBUG" ] && ru_debug="$RU_DEBUG"
+[ -n "$RU_CONF" ] && ru_conf="$RU_CONF"
 
 ### Global functions
 
@@ -68,28 +71,46 @@ ru_servers() {
 
 ### Ansible management functions
 
+ru_dir_init() {
+  if [ ${ru_debug} -eq 0 -o -z "${ru_conf}" ] ; then
+    which uuidgen >/dev/null 2>&1 && ru_ansible_id=$(uuidgen)
+    which uuid >/dev/null 2>&1 && ru_ansible_id=$(uuid)
+    [ -z "${ru_ansible_id}" ] && ru_usage "Unable to get an uuid. Probably neither uuidgen nor uuid is installed."
+    ru_ansible_dir=/tmp/ansible/${ru_ansible_id}
+    mkdir -p ${ru_ansible_dir}
+    ru_conf_file=${ru_ansible_dir}/${ru_conf_file_name}
+    echo "ru_ansible_id=${ru_ansible_id}" >> ${ru_conf_file}
+    echo "ru_ansible_dir=${ru_ansible_dir}" >> ${ru_conf_file}
+  fi
+  ru_set_conf_file
+  . ${ru_conf_file}
+}
+
 ru_ansible_init() {
-  which uuidgen >/dev/null 2>&1 && ru_ansible_id=$(uuidgen)
-  which uuid >/dev/null 2>&1 && ru_ansible_id=$(uuid)
-  [ -z "${ru_ansible_id}" ] && ru_usage "Unable to get an uuid. Probably neither uuidgen nor uuid is installed."
-  ru_ansible_dir=/tmp/ansible/${ru_ansible_id}
-  ru_ansible_inventory=${ru_ansible_dir}/inventory
-  ru_ansible_playbook=${ru_ansible_dir}/playbook.yml
-  ru_ansible_roledir=${ru_ansible_dir}/roles
+  if [ ${ru_debug} -eq 0 -o -z "${ru_conf}" ] ; then
+    echo "ru_ansible_inventory=${ru_ansible_dir}/inventory" >> ${ru_conf_file}
+    echo "ru_ansible_playbook=${ru_ansible_dir}/playbook.yml" >> ${ru_conf_file}
+    echo "ru_ansible_roledir=${ru_ansible_dir}/roles" >> ${ru_conf_file}
+  fi
+  . ${ru_conf_file}
 
   mkdir -p ${ru_ansible_roledir}
   [ ! -L ${ru_ansible_roledir}/${ru_env_name} ] && ln -s $PWD/.. ${ru_ansible_roledir}/${ru_env_name}
   [ -d group_vars -a ! -L ${ru_ansible_dir}/group_vars ] && ln -s $PWD/group_vars ${ru_ansible_dir}/group_vars || mkdir -p ${ru_ansible_dir}/group_vars
 
-  cat > ${ru_ansible_playbook} << EOF
+  [ ! -f ${ru_ansible_playbook} ] && cat > ${ru_ansible_playbook} << EOF
 - hosts: ${ru_env_name}
   roles:
     - ${ru_env_name}
 EOF
 }
 
+ru_run_ansible_command() {
+  echo "ansible-playbook --verbose --diff -i ${ru_ansible_inventory} --connection=${ru_env_cnx} ${ru_ansible_playbook}"
+}
+
 ru_run_ansible() {
-  assert "ansible-playbook --verbose --diff -i ${ru_ansible_inventory} --connection=${ru_env_cnx} ${ru_ansible_playbook}"
+  assert "$(ru_run_ansible_command)"
 }
 
 ru_run_ansible_module() {
@@ -110,13 +131,23 @@ ru_ansible_fact() {
   ru_ansible_facts ${ru_servers} | grep "\"${fact}\"" | tr -d '" ,' | cut -d ":" -f 2
 }
 
-### Test interface
-
-[ -z "$RU_ENV_IMAGE" ] && ru_usage "You did not specify an image on which to run tests."
+ru_set_conf_file() {
+  if [ ${ru_debug} -eq 1 -a -n "${ru_conf}" ] ; then
+    ru_conf_file=${ru_conf}
+  else
+    ru_conf_file=${ru_ansible_dir}/${ru_conf_file_name}
+  fi
+}
 
 ### Set ansible environment
 
-export ru_ansible_id ru_ansible_dir ru_ansible_inventory ru_ansible_playbook ru_ansible_roledir
+ru_dir_init
+export ru_ansible_id ru_ansible_dir ru_conf_file ru_ansible_inventory ru_ansible_playbook ru_ansible_roledir
+[ ${ru_debug} -eq 1 -a -n "${ru_conf}" ] && . ${ru_conf_file}
+
+### Test interface
+
+[ -z "$RU_ENV_IMAGE" ] && ru_usage "You did not specify an image on which to run tests."
 
 ### Load virtualization specific library
 
