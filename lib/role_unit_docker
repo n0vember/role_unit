@@ -18,16 +18,14 @@
 ru_env_cnx="docker"
 ru_env_docker_repo="registry.gitlab.com/role_unit/role_unit_containers"
 ru_docker_refresh="1 week ago" # if docker images are older than this, they will be refreshed
-ru_debug=0
 
 ### User environment
 
 [ -n "$RU_ENV_DOCKER_REPO" ] && ru_env_docker_repo="$RU_ENV_DOCKER_REPO"
-[ -n "$RU_DEBUG" ] && ru_debug="$RU_DEBUG"
 
 ### Global functions
 
-declare -A ru_servers_names
+declare -p ru_servers_names >/dev/null 2>&1 || declare -A ru_servers_names
 
 ru_destroy() {
   local ru_server
@@ -64,24 +62,35 @@ ru_pull() {
 
 ru_init() {
   local ru_server
-  ru_pull ${ru_env_docker_repo}:${ru_env_image}
-  for ru_server in $(ru_servers)
-  do
-    local ru_server_name="${pu_env_name}_$(date +%s)"
-    which uuidgen >/dev/null 2>&1 && ru_server_name=$(uuidgen)
-    which uuid >/dev/null 2>&1 && ru_server_name=$(uuid)
-    ru_info starting container ${ru_server}
-    docker run -d --privileged --name=${ru_server_name} --hostname=${ru_server_name} ${ru_env_docker_repo}:${ru_env_image} >/dev/null 2>&1
-    ru_servers_names[${ru_server}]=${ru_server_name}
-  done
+  ru_dir_init
+  if [ ${ru_debug} -eq 0 -o -z "${ru_conf}" ] ; then
+    echo "RU_ENV_IMAGE=${ru_env_image}" >> ${ru_conf_file}
+    ru_pull ${ru_env_docker_repo}:${ru_env_image}
+    for ru_server in $(ru_servers)
+    do
+      local ru_server_name="${pu_env_name}_$(date +%s)"
+      which uuidgen >/dev/null 2>&1 && ru_server_name=$(uuidgen)
+      which uuid >/dev/null 2>&1 && ru_server_name=$(uuid)
+      ru_info starting container ${ru_server}
+      docker run -d --privileged --name=${ru_server_name} --hostname=${ru_server_name} ${ru_env_docker_repo}:${ru_env_image} >/dev/null 2>&1
+      echo "ru_servers_names[${ru_server}]=${ru_server_name}" >> ${ru_conf_file}
+    done
+  fi
+  . ${ru_conf_file}
   if [ ${ru_debug} -ne 1 ] ; then
     trap "ru_destroy" EXIT
-  else
-    ru_info debug mode activated
-    ru_info you will have to drop those containers manually :
-    ru_info $(ru_server_names | xargs echo docker rm -f)
   fi
   ru_ansible_init
+  if [ ${ru_debug} -eq 1 ] ; then
+    ru_info Debug mode activated. Environment will not be dropped after the tests.
+    ru_info to re-run the tests on the same environment, set the environment and launch the test file:
+    ru_info "    export RU_DEBUG=1"
+    ru_info "    export RU_CONF=${ru_conf_file}"
+    ru_info "    $0 ${test_file}"
+    ru_info at the end, you will have to drop those containers manually  and unset vars:
+    ru_info "    $(ru_server_names | xargs echo docker rm -f)"
+    ru_info "    unset RU_DEBUG RU_CONF"
+  fi
   echo "[${ru_env_name}]" > ${ru_ansible_inventory}
   for ru_server in $(ru_servers) ; do
     echo ${ru_servers_names[${ru_server}]}
