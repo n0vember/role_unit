@@ -110,6 +110,7 @@ ru_run_ansible_command() {
 }
 
 ru_run_ansible() {
+  ru_info applying ansible playbook
   assert "$(ru_run_ansible_command)"
 }
 
