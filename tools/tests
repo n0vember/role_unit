@@ -20,7 +20,7 @@ test_that_succeeds() {
 
 setup_suite() {
   ru_init
-  ru_run_ansible
+  ru_run_ansible verbose
 }
 
 # vim: syntax=sh

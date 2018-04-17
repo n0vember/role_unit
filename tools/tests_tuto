@@ -79,7 +79,7 @@ setup_suite() {
   cat > ${ru_ansible_dir}/group_vars/all.yml <<EOF
 a_variable: "a value"
 EOF
-  ru_run_ansible # And this launches ansible
+  ru_run_ansible verbose # And this launches ansible
 }
 
 # vim: syntax=sh
