@@ -29,6 +29,21 @@ usage() {
   exit 1
 }
 
+read_link() {
+  local link=$1
+  local path=$(dirname ${link})
+  local file=$(basename ${link})
+  cd ${path}
+  if [ -L ${file} ] ; then
+    file=$(readlink ${file})
+    file=$(read_link ${file})
+  else
+    local dir=$(pwd)
+    echo -n ${dir}/
+  fi
+  echo ${file}
+}
+
 create_an_ansible_role() {
   local role_name=$1
   # Create empty role
@@ -88,13 +103,9 @@ done
 
 [ $# -lt 1 ] && usage "role name is mandatory"
 
-# Set readlink option. -e is not available on all systems
-readlink_opt="-e"
-readlink ${readlink_opt} / >/dev/null 2>&1 || readlink_opt="-f"
-
 # determine where we create dir and where script really is
 role_dir=$(pwd)
-role_unit_dir=$(dirname $(readlink ${readlink_opt} $0))
+role_unit_dir=$(dirname $(read_link $0))
 
 while [ $# -ge 1 ]
 do
