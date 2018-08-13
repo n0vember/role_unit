@@ -1,0 +1,103 @@
+#    (c) 2017-2016, n0vember <n0vember@half-9.net>
+#
+#    This file is part of role_unit.
+#
+#    role_unit is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    role_unit is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with role_unit.  If not, see <http://www.gnu.org/licenses/>.
+
+ru_env_cnx="ssh"
+export NC_CONTEXT=${ru_env_name}
+grep ^NC_CONTEXT= ${ru_conf_file} >/dev/null 2>&1 || echo "NC_CONTEXT=${NC_CONTEXT}" >> ${ru_conf_file}
+
+### User environment
+
+# none
+
+### Global functions
+
+declare -p ru_servers_names >/dev/null 2>&1 || declare -A ru_servers_names
+
+ru_destroy() {
+  local ru_server
+  ru_info stopping machines
+  nocloud destroy >/dev/null 2>&1
+}
+
+ru_pull() {
+  local ru_image_name=$1
+  local ru_template_exists=$(nocloud template list | grep "^${ru_image_name}$" 2>&1 | wc -l)
+  if [ ${ru_template_exists} -eq 0 ] ; then
+    ru_info downloading template
+    nocloud template download ${ru_image_name}
+  fi
+  ru_template_exists=$(nocloud template list | grep "^${ru_image_name}" 2>&1 | wc -l)
+  [ ${ru_template_exists} -eq 0 ] && ru_usage "unable to download template (${ru_image_name})"
+}
+
+ru_init() {
+  local ru_server
+  ru_dir_init
+  if [ ${ru_debug} -eq 0 -o -z "${ru_conf}" ] ; then
+    echo "RU_ENV_IMAGE=${ru_env_image}" >> ${ru_conf_file}
+    ru_pull ${ru_env_image}
+    nocloud run machines ${ru_env_image}:${ru_count}:role_unit >/dev/null 2>&1
+    local ru_counter=1
+    for ru_server in $(ru_servers)
+    do
+      ru_server_name=$(nocloud inventory | tail -n +${ru_counter} | head -1 | cut -d ' ' -f 1)
+      echo "ru_servers_names[${ru_server}]=${ru_server_name}" >> ${ru_conf_file}
+    done
+  fi
+  . ${ru_conf_file}
+  if [ ${ru_debug} -ne 1 ] ; then
+    trap "ru_destroy" EXIT
+  fi
+  ru_ansible_init
+  if [ ${ru_debug} -eq 1 ] ; then
+    ru_info Debug mode activated. Environment will not be dropped after the tests.
+    ru_info to re-run the tests on the same environment, set the environment and launch the test file:
+    ru_info "    export RU_DEBUG=1"
+    ru_info "    export RU_CONF=${ru_conf_file}"
+    ru_info "    . \$RU_CONF"
+    ru_info "    $0 ${test_file}"
+    ru_info at the end, you will have to drop those containers manually  and unset vars:
+    ru_info "    nocloud destroy"
+    ru_info "    unset RU_DEBUG RU_CONF"
+  fi
+  [ -L ${ru_ansible_inventory} ] || ln -s /usr/local/bin/nocloud ${ru_ansible_inventory}
+}
+
+ru_run() {
+  local ru_servers=$(ru_servers)
+  local ru_background_option
+  [ "$1" == "-d" ] && ru_background_option="&" && shift
+  [ "$1" == "-n" ] && ru_servers=$(ru_server $2) && shift 2
+  for ru_server in ${ru_servers}
+  do
+    local ru_server_name=${ru_servers_names[${ru_server}]}
+    vmssh ${ru_server_name} "$@" ${ru_background_option}
+  done
+}
+
+ru_server_name() {
+  local ru_server=$(ru_server $1)
+  echo ${ru_servers_names[${ru_server}]}
+}
+
+ru_server_names() {
+  for ru_server in $(ru_servers) ; do
+    echo ${ru_servers_names[${ru_server}]}
+  done
+}
+
+# vim: syntax=sh

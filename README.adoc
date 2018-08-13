@@ -61,10 +61,18 @@ there is only one mandatory environment variable, which is RU_ENV_IMAGE. It defi
 role_unit behaviour can be changed using environment variables:
 
 * RU_ENV_NAME defines the testing environment name. It is the name of the role you will test.
+* RU_ENV_TYPE defines the the backend you are using. Can be docker or nocloud, defaults to docker.
 * RU_ENV_DOCKER_REPO defines the docker repository to pull images from.
 * RU_ENV_IMAGE defines the system image used to create test environment.
 * RU_COUNT sets the number of containers or virtual machines
 * RU_DEBUG when set to 1, will make role_unit not to stop containers after the run, so you can enter them to check things.
+
+other role_unit variables may be used, but only to read values. Overwriting them may produce unexpected behaviours:
+
+* ru_ansible_playbook is an absolute path to the playbook that will be used by ru_run_ansible
+* ru_ansible_dir is the temporary working directory for the tests. You will for instance find the group_vars in it.
+
+For example of the usage you can made of these variables, have a look at the tests_tuto file in your tests directory. 
 
 == about namespace
 
