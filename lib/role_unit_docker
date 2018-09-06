@@ -72,7 +72,15 @@ ru_init() {
       which uuidgen >/dev/null 2>&1 && ru_server_name=$(uuidgen)
       which uuid >/dev/null 2>&1 && ru_server_name=$(uuid)
       ru_info starting container ${ru_server}
-      docker run -d --privileged --name=${ru_server_name} --hostname=${ru_server_name} ${ru_env_docker_repo}:${ru_env_image} >/dev/null 2>&1
+      docker run \
+        -d \
+        --tmpfs /tmp \
+        --tmpfs /run \
+        -v /sys/fs/cgroup:/sys/fs/cgroup:ro \
+        --name=${ru_server_name} \
+        --hostname=${ru_server_name} \
+        ${ru_env_docker_repo}:${ru_env_image} \
+        >/dev/null 2>&1
       echo "ru_servers_names[${ru_server}]=${ru_server_name}" >> ${ru_conf_file}
     done
   fi
