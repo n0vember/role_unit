@@ -74,6 +74,7 @@ ru_init() {
       ru_info starting container ${ru_server}
       docker run \
         -d \
+        --rm \
         --tmpfs /tmp \
         --tmpfs /run \
         -v /sys/fs/cgroup:/sys/fs/cgroup:ro \
@@ -96,7 +97,7 @@ ru_init() {
     ru_info "    export RU_CONF=${ru_conf_file}"
     ru_info "    $0 ${test_file}"
     ru_info at the end, you will have to drop those containers manually  and unset vars:
-    ru_info "    $(ru_server_names | xargs echo docker rm -f)"
+    ru_info "    $(ru_server_names | xargs echo docker stop)"
     ru_info "    unset RU_DEBUG RU_CONF"
   fi
   echo "[${ru_env_name}]" > ${ru_ansible_inventory}
