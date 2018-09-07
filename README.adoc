@@ -8,19 +8,51 @@ Role_unit is based on https://github.com/pgrange/bash_unit[bash_unit], a bash un
 
 == prerequisites
 
-* docker
-* ansible
+None of the following are really required to use role_unit. It only depends on your use-case.
+
+* docker to tests using containers
+* nocloud if you want to test using nocloud virtual machines
+* ansible to test ansible roles
+
+== installation
+
+There is no installation process. Valid way to use role_unit is to clone repository somewhere and link role_init to a place where it will be in your PATH environment variable.
 
 == usage
 
-To create a new role tested with role_unit, place yourself in the directory where you want the role and run role_init:
+To create a new ansible role tested with role_unit, place yourself in the directory where you want the role and run role_init:
 
 ----
 cd /my/ansible/dir/roles
-/path/to/role_init my_role
+role_init my_role
 ----
 
-This will create an empty role with the testing tools in the tests directory. A default tests file is created. To run the tests, you will have to specify the distribution by setting the RU_ENV_IMAGE variable (see below).
+This will create an empty role with the testing tools in the tests directory. A default tests file is created. To run the tests, you will have to specify the distribution by setting the RU_ENV_IMAGE variable (see below). Standard use is the following:
+
+----
+cd my_role
+RU_ENV_IMAGE=debian9 tests/bash_unit tests/tests_my_role
+----
+
+Full exemple of a role creation using role_init:
+
+----
+/tmp role_init app
+/tmp cd app
+/tmp/app RU_ENV_IMAGE=debian9 tests/bash_unit tests/tests_app
+Running tests in tests/tests_app
+starting container ru_role_unit_00
+applying ansible playbook
+Running test_that_succeeds... SUCCESS ✓ 
+Running test_that_succeeds_in_failure... SUCCESS ✓ 
+stopping container ru_role_unit_00
+/tmp/app RU_ENV_TYPE=nocloud RU_ENV_IMAGE=debian9 tests/bash_unit tests/tests_app
+Running tests in tests/tests_app
+applying ansible playbook
+Running test_that_succeeds... SUCCESS ✓ 
+Running test_that_succeeds_in_failure... SUCCESS ✓ 
+stopping machines
+----
 
 The tests directory is a standard ansible structure : if you place a group_vars directory it will be used.
 
@@ -50,7 +82,7 @@ Returns the specified ansible fact for all of the servers or just on the one spe
 
 == parameters
 
-there is only one mandatory environment variable, which is RU_ENV_IMAGE. It defines the linux flavor you will run your tests against. Default configuration pulls docker images from role_unit containers repository (registry.gitlab.com/role_unit/role_unit_containers). Actually, you can choose among :
+There is only one mandatory environment variable, which is RU_ENV_IMAGE. It defines the linux flavor you will run your tests against. Default configuration pulls docker images from role_unit containers repository (registry.gitlab.com/role_unit/role_unit_containers). Actually, you can choose among :
 
 * debian 9 (stretch)
 * debian 8 (jessie)
