@@ -50,11 +50,12 @@ ru_init() {
   if [ ${ru_debug} -eq 0 -o -z "${ru_conf}" ] ; then
     echo "RU_ENV_IMAGE=${ru_env_image}" >> ${ru_conf_file}
     ru_pull ${ru_env_image}
+    ru_info starting virtual machines
     nocloud run machines ${ru_env_image}:${ru_count}:role_unit >/dev/null 2>&1
     local ru_counter=1
     for ru_server in $(ru_servers)
     do
-      ru_server_name=$(nocloud inventory | tail -n +${ru_counter} | head -1 | cut -d ' ' -f 1)
+      ru_server_name=$(nocloud inventory | tail -n +${ru_counter} | head -1 | cut -d ' ' -f 3)
       echo "ru_servers_names[${ru_server}]=${ru_server_name}" >> ${ru_conf_file}
     done
   fi
@@ -85,7 +86,7 @@ ru_run() {
   for ru_server in ${ru_servers}
   do
     local ru_server_name=${ru_servers_names[${ru_server}]}
-    vmssh ${ru_server_name} "$@" ${ru_background_option}
+    vmssh ${ru_server_name} $@ ${ru_background_option}
   done
 }
 
