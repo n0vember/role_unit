@@ -74,6 +74,7 @@ ru_init() {
       ru_info starting container ${ru_server}
       docker run \
         -d \
+        --cap-add=SYS_ADMIN \
         --rm \
         --tmpfs /tmp \
         --tmpfs /run \

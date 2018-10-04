@@ -24,6 +24,11 @@ test_group_vars_is_seen() {
   assert "ru_run_ansible_module -m debug -a var=there_is_no_such_thing_as_this_variable | grep '.there_is_no_such_thing_as_this_variable.: .VARIABLE IS NOT DEFINED!.'"
 }
 
+test_i_can_access_systemd_if_it_is_my_init_system() {
+  init_system=$(ru_ansible_fact ansible_service_mgr)
+  [ "${init_system}" == "systemd" ] && assert "ru_run systemctl status"
+}
+
 setup_suite() {
   ru_init
   ru_run_ansible verbose
