@@ -27,6 +27,7 @@ test_group_vars_is_seen() {
 test_i_can_access_systemd_if_it_is_my_init_system() {
   init_system=$(ru_ansible_fact ansible_service_mgr)
   [ "${init_system}" == "systemd" ] && assert "ru_run systemctl status"
+  assert "ru_run echo"
 }
 
 setup_suite() {
