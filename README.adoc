@@ -80,6 +80,32 @@ If you specify -d option, this will launch command in a detached mode. There may
 
 Returns the specified ansible fact for all of the servers or just on the one specified. N is the number of the server you want to get the fact from.
 
+=== ru_ansible_fact_filter [ -n N ] fact_filter
+
+Filters facts with the given expression and return the matching part of the facts in json format.
+
+For instance, running ```ru_ansible_fact_filter anisble_default_ipv4``` will return a similar parsable output :
+
+----
+192.168.13.53 | SUCCESS => {
+    "ansible_facts": {
+        "ansible_default_ipv4": {
+            "address": "192.168.13.53",
+            "alias": "ens3",
+            "broadcast": "192.168.13.255",
+            "gateway": "192.168.13.1",
+            "interface": "ens3",
+            "macaddress": "00:50:56:7a:3e:d9",
+            "mtu": 1500,
+            "netmask": "255.255.255.0",
+            "network": "192.168.13.0",
+            "type": "ether"
+        }
+    },
+    "changed": false
+}
+-----
+
 == parameters
 
 There is only one mandatory environment variable, which is RU_ENV_IMAGE. It defines the linux flavor you will run your tests against. Default configuration pulls docker images from role_unit containers repository (registry.gitlab.com/role_unit/role_unit_containers). Actually, you can choose among :

@@ -133,6 +133,14 @@ ru_ansible_fact() {
   ru_ansible_facts ${ru_servers} | grep "\"${fact}\"" | tr -d '" ,' | cut -d ":" -f 2
 }
 
+ru_ansible_fact_filter() {
+  local ru_servers
+  [ "$1" == "-n" ] && ru_server_names=$(ru_server_name $2) && shift 2
+  ru_server_names=$(echo -e "${ru_server_names}" | tr "\n" ",")
+  local filter=$1
+  ansible -i ${ru_ansible_inventory} --connection=${ru_env_cnx} ${ru_server_names} -m setup -a "filter=${filter}"
+}
+
 ru_set_conf_file() {
   if [ ${ru_debug} -eq 1 -a -n "${ru_conf}" ] ; then
     ru_conf_file=${ru_conf}
