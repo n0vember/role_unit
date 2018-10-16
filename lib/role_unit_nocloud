@@ -53,7 +53,7 @@ ru_init() {
     ru_info starting virtual machines
     nocloud run machines ${ru_env_image}:${ru_count}:role_unit >/dev/null 2>&1
     local ru_counter=1
-    for ru_server in $(ru_servers)
+    for ru_server in $(ru_server_nums)
     do
       ru_server_name=$(nocloud inventory | tail -n +${ru_counter} | head -1 | cut -d ' ' -f 3)
       echo "ru_servers_names[${ru_server}]=${ru_server_name}" >> ${ru_conf_file}
@@ -79,10 +79,10 @@ ru_init() {
 }
 
 ru_run() {
-  local ru_servers=$(ru_servers)
+  local ru_servers=$(ru_server_nums)
   local ru_background_option
   [ "$1" == "-d" ] && ru_background_option="&" && shift
-  [ "$1" == "-n" ] && ru_servers=$(ru_server $2) && shift 2
+  [ "$1" == "-n" ] && ru_servers=$(ru_server_num $2) && shift 2
   for ru_server in ${ru_servers}
   do
     local ru_server_name=${ru_servers_names[${ru_server}]}

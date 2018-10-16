@@ -29,10 +29,10 @@ declare -p ru_servers_names >/dev/null 2>&1 || declare -A ru_servers_names
 
 ru_destroy() {
   local ru_server
-  for ru_server in $(ru_servers)
+  for ru_server in $(ru_server_nums)
   do
     local ru_server_name=${ru_servers_names[${ru_server}]}
-    ru_info stopping container ${ru_server}
+    ru_info stopping container $(ru_server ${ru_server})
     docker rm -f ${ru_server_name} >/dev/null 2>&1
   done
 }
@@ -66,12 +66,12 @@ ru_init() {
   if [ ${ru_debug} -eq 0 -o -z "${ru_conf}" ] ; then
     echo "RU_ENV_IMAGE=${ru_env_image}" >> ${ru_conf_file}
     ru_pull ${ru_env_docker_repo}:${ru_env_image}
-    for ru_server in $(ru_servers)
+    for ru_server in $(ru_server_nums)
     do
       local ru_server_name="${pu_env_name}_$(date +%s)"
       which uuidgen >/dev/null 2>&1 && ru_server_name=$(uuidgen)
       which uuid >/dev/null 2>&1 && ru_server_name=$(uuid)
-      ru_info starting container ${ru_server}
+      ru_info starting container $(ru_server ${ru_server})
       docker run \
         -d \
         --cap-add=SYS_ADMIN \
@@ -102,16 +102,16 @@ ru_init() {
     ru_info "    unset RU_DEBUG RU_CONF"
   fi
   echo "[${ru_env_name}]" > ${ru_ansible_inventory}
-  for ru_server in $(ru_servers) ; do
+  for ru_server in $(ru_server_nums) ; do
     echo ${ru_servers_names[${ru_server}]}
   done >> ${ru_ansible_inventory}
 }
 
 ru_run() {
-  local ru_servers=$(ru_servers)
+  local ru_servers=$(ru_server_nums)
   local ru_background_option
   [ "$1" == "-d" ] && ru_background_option="-d" && shift
-  [ "$1" == "-n" ] && ru_servers=$(ru_server $2) && shift 2
+  [ "$1" == "-n" ] && ru_servers=$(ru_server_num $2) && shift 2
   for ru_server in ${ru_servers}
   do
     local ru_server_name=${ru_servers_names[${ru_server}]}
@@ -120,12 +120,12 @@ ru_run() {
 }
 
 ru_server_name() {
-  local ru_server=$(ru_server $1)
-  echo ${ru_servers_names[${ru_server}]}
+  local ru_server_num=$1
+  echo ${ru_servers_names[${ru_server_num}]}
 }
 
 ru_server_names() {
-  for ru_server in $(ru_servers) ; do
+  for ru_server in $(ru_server_nums) ; do
     echo ${ru_servers_names[${ru_server}]}
   done
 }
