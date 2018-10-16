@@ -105,12 +105,6 @@ ru_init() {
   for ru_server in $(ru_server_nums) ; do
     echo ${ru_servers_names[${ru_server}]}
   done >> ${ru_ansible_inventory}
-for ru_server in $(ru_server_nums) ; do
-  echo ${ru_server}
-  echo $(ru_server ${ru_server})
-  echo ${ru_servers_names[${ru_server}]}
-done
-cat ${ru_conf_file}
 }
 
 ru_run() {
