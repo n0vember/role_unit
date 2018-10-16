@@ -120,7 +120,7 @@ ru_run() {
 }
 
 ru_server_name() {
-  local ru_server_num=$1
+  local ru_server_num=$(ru_server_num $1)
   echo ${ru_servers_names[${ru_server_num}]}
 }
 
