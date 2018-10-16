@@ -58,16 +58,29 @@ ru_usage() {
 ### Servers management functions
 
 ru_server() {
-  local ru_num=$(printf "%02d" $1)
+  local ru_num=$(ru_server_num $1)
   echo ru_${ru_env_name}_${ru_num}
 }
 
 ru_servers() {
   local ru_num
-  for ru_num in $(seq -w 00 $((ru_count-1)))
+  for ru_num in $(ru_server_nums)
   do
     ru_server ${ru_num}
   done
+}
+
+ru_server_nums() {
+  local ru_num
+  for ru_num in $(seq -w 00 $((ru_count-1)))
+  do
+    echo ${ru_num}
+  done
+}
+
+ru_server_num() {
+  local ru_num=$(printf "%02d" $1)
+  echo ${ru_num}
 }
 
 ### Ansible management functions
