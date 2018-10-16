@@ -114,7 +114,7 @@ cat ${ru_conf_file}
 }
 
 ru_run() {
-  local ru_servers=$(ru_servers)
+  local ru_servers=$(ru_server_nums)
   local ru_background_option
   [ "$1" == "-d" ] && ru_background_option="-d" && shift
   [ "$1" == "-n" ] && ru_servers=$(ru_server_num $2) && shift 2
