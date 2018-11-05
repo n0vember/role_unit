@@ -66,6 +66,8 @@ Initiates testing environment, i.e. creates containers or virtual machines depen
 
 Initiates ansible inventory and playbook necessary to test your ansible role.
 
+Note that if your testing directory contains a requirements.yml file, ansible-galaxy will be used to fetch the roles in the roles directory. It is then up to you to use that role (rewrite playbook, include tasks in your role...).
+
 === ru_run_ansible
 
 Actually run ansible-playbook on your testing environment.
