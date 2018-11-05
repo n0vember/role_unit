@@ -100,6 +100,13 @@ ru_dir_init() {
   . ${ru_conf_file}
 }
 
+ru_ansible_requirements() {
+  if [ -f requirements.yml ] ; then
+    ru_info fetching requirements
+    ansible-galaxy install --force --roles-path ${ru_ansible_dir}/roles/ -r requirements.yml
+  fi
+}
+
 ru_ansible_init() {
   if [ ${ru_debug} -eq 0 -o -z "${ru_conf}" ] ; then
     echo "ru_ansible_inventory=${ru_ansible_dir}/inventory" >> ${ru_conf_file}
@@ -111,6 +118,8 @@ ru_ansible_init() {
   mkdir -p ${ru_ansible_roledir}
   [ ! -L ${ru_ansible_roledir}/${ru_env_name} ] && ln -s $PWD/.. ${ru_ansible_roledir}/${ru_env_name}
   [ -d group_vars -a ! -L ${ru_ansible_dir}/group_vars ] && cp -r $PWD/group_vars ${ru_ansible_dir}/group_vars || mkdir -p ${ru_ansible_dir}/group_vars
+
+  ru_ansible_requirements
 
   [ ! -f ${ru_ansible_playbook} ] && cat > ${ru_ansible_playbook} << EOF
 - hosts: ${ru_env_name}

@@ -1,0 +1,31 @@
+#!/usr/bin/env bash_unit
+
+RU_ENV_NAME=ru_req
+RU_ENV_IMAGE=debian9
+
+DEP_NAME=pacman
+DEP_URL=https://gitlab.com/make_me_a_machine/roles/pacman.git
+
+. lib/role_unit
+
+test_requirements_are_fetched_if_requirements_file_exists() {
+  assert_fail "test -d ${ru_ansible_dir}/roles/${DEP_NAME}"
+  ru_init >/dev/null
+  trap - EXIT # Trick to issue silently the destroy
+  assert "test -d ${ru_ansible_dir}/roles/${DEP_NAME}"
+  ru_destroy >/dev/null
+}
+
+setup_suite() {
+  cat > requirements.yml <<EOF
+- src: https://gitlab.com/make_me_a_machine/roles/pacman.git
+  scm: git 
+  version: master
+EOF
+}
+
+teardown_suite() {
+  rm requirements.yml
+}
+
+# vim: syntax=sh
