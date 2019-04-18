@@ -106,7 +106,7 @@ For instance, running ```ru_ansible_fact_filter anisble_default_ipv4``` will ret
     },
     "changed": false
 }
------
+----
 
 == parameters
 
