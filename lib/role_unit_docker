@@ -17,7 +17,8 @@
 
 ru_env_cnx="docker"
 ru_env_docker_repo="registry.gitlab.com/role_unit/role_unit_containers"
-ru_docker_refresh="1 week ago" # if docker images are older than this, they will be refreshed
+#ru_docker_refresh="1 week ago" # if docker images are older than this, they will be refreshed
+ru_docker_refresh="604800" # if docker images are older than this, they will be refreshed
 
 ### User environment
 
@@ -44,9 +45,11 @@ ru_pull() {
 
   local ru_image_exists=$(docker images | grep "^${ru_image_repo} *${ru_image_tag} " | wc -l)
   if [ ${ru_image_exists} -gt 0 ] ; then
-    local ru_image_date=$(docker images | grep "^${ru_image_repo} *${ru_image_tag} " | sed -r 's/^([^ ]+ +){3}//;s/ +[^ ]+$//;s/About an/1/;s/Less than a/1/')
+    #local ru_image_date=$(docker images | grep "^${ru_image_repo} *${ru_image_tag} " | sed -r 's/^([^ ]+ +){3}//;s/ +[^ ]+$//;s/About an/1/;s/Less than a/1/')
+    local ru_image_date=$(docker images --filter=reference='registry.gitlab.com/role_unit/role_unit_containers:build' --format "{{.CreatedAt}}" | cut -d ' ' -f 1,2)
     local ru_image_epoch=$(date -d "${ru_image_date}" "+%s")
-    local ru_docker_refresh_epoch=$(date -d "${ru_docker_refresh}" "+%s")
+    local ru_epoch=$(date "+%s")
+    local ru_docker_refresh_epoch=$((ru_epoch-ru_docker_refresh))
     if [ ${ru_image_epoch} -lt ${ru_docker_refresh_epoch} ] ; then
       ru_info pulling docker image
       docker pull ${ru_image_name} >/dev/null 2>&1
