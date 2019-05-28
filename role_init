@@ -64,7 +64,6 @@ make_directory_testable() {
   [ ! -f ${role_name}/.gitlab-ci.yml ] \
     && cp ${verbose_flag} ${role_unit_dir}/tools/gitlab-ci.yml ${role_name}/.gitlab-ci.yml \
     && sed -i "s:ROLE_NAME:${role_name}:g" ${role_name}/.gitlab-ci.yml
-  cp ${verbose_flag} ${role_unit_dir}/tools/tests_tuto ${role_name}/tests/tests_tuto
 }
 
 explain() {
@@ -72,8 +71,8 @@ explain() {
 $1 role created. Go in $1 directory and...
   Start testing now with the following command:
   RU_ENV_IMAGE=debian9 tests/bash_unit tests/tests_$1
-  Look for help in tests/tests_tuto file and run it:
-  RU_ENV_IMAGE=centos7 tests/bash_unit tests/tests_tuto
+  Look for help in tools/tests_tuto file and run it:
+  RU_ENV_IMAGE=centos7 tests/bash_unit tools/tests_tuto
   Change the image you use to match your needs and code your role.
 
 EOF
