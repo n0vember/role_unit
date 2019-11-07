@@ -139,7 +139,7 @@ ru_run_ansible() {
   if [ $# -gt 0 -a "$1" == "verbose" ] ; then
     ru_info applying ansible playbook
   fi
-  assert "$(ru_run_ansible_command)"
+  assert "$(ru_run_ansible_command) > /tmp/ru_ansible.out 2>&1"
 }
 
 ru_run_ansible_module() {
