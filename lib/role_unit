@@ -22,7 +22,7 @@ ru_env_type="docker"
 ru_env_image="debian9"
 ru_count=1
 ru_debug=0
-
+ru_first_debug=0
 ru_conf_file_name="ru.conf"
 
 ### User environment
@@ -33,6 +33,7 @@ ru_conf_file_name="ru.conf"
 [ -n "$RU_COUNT" ] && ru_count="$RU_COUNT"
 [ -n "$RU_DEBUG" ] && ru_debug="$RU_DEBUG"
 [ -n "$RU_CONF" ] && ru_conf="$RU_CONF"
+[ -n "$RU_DEBUG" -a -z "$RU_CONF" ] && ru_first_debug=1
 
 ### Global functions
 
@@ -129,11 +130,15 @@ EOF
 }
 
 ru_run_ansible_command() {
-  echo "ansible-playbook --verbose --diff -i ${ru_ansible_inventory} --connection=${ru_env_cnx} ${ru_ansible_playbook}"
+  local ru_skip_tags
+  [ ${ru_debug} -eq 1 -a ${ru_first_debug} -ne 1 ] && ru_skip_tags="--skip-tags ru_once_debug"
+  echo "ansible-playbook --verbose --diff -i ${ru_ansible_inventory} --connection=${ru_env_cnx} ${ru_ansible_playbook} ${ru_skip_tags}"
 }
 
 ru_run_ansible() {
-  [ $# -gt 0 -a "$1" == "verbose" ] && ru_info applying ansible playbook
+  if [ $# -gt 0 -a "$1" == "verbose" ] ; then
+    ru_info applying ansible playbook
+  fi
   assert "$(ru_run_ansible_command)"
 }
 

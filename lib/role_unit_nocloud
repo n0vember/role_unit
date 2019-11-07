@@ -66,10 +66,13 @@ ru_init() {
   ru_ansible_init
   if [ ${ru_debug} -eq 1 ] ; then
     ru_info Debug mode activated. Environment will not be dropped after the tests.
-    ru_info to re-run the tests on the same environment, set the environment and launch the test file:
-    ru_info "    export RU_DEBUG=1"
-    ru_info "    export RU_CONF=${ru_conf_file}"
-    ru_info "    . \$RU_CONF"
+    if [ ${ru_first_debug} -eq 1 ] ; then
+      ru_info "this is the first run in this debug environment, set the variables before re-run:"
+      ru_info "    export RU_DEBUG=1"
+      ru_info "    export RU_CONF=${ru_conf_file}"
+      ru_info "    . \$RU_CONF"
+    fi
+    ru_info to re-run the tests on the same environment, re-run the same command:
     ru_info "    $0 ${test_file}"
     ru_info at the end, you will have to drop those containers manually  and unset vars:
     ru_info "    nocloud destroy"
