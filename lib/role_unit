@@ -118,7 +118,16 @@ ru_ansible_init() {
 
   mkdir -p ${ru_ansible_roledir}
   [ ! -L ${ru_ansible_roledir}/${ru_env_name} ] && ln -s $PWD/.. ${ru_ansible_roledir}/${ru_env_name}
-  [ -d group_vars -a ! -L ${ru_ansible_dir}/group_vars ] && cp -r $PWD/group_vars ${ru_ansible_dir}/group_vars || mkdir -p ${ru_ansible_dir}/group_vars
+  if [ -d ${ru_ansible_dir}/group_vars ] ; then
+    rm -r ${ru_ansible_dir}/group_vars
+  fi
+  if [ ! -L ${ru_ansible_dir}/group_vars ] ; then
+    if [ -d group_vars ] ; then
+      cp -r $PWD/group_vars ${ru_ansible_dir}/group_vars
+    else
+      mkdir -p ${ru_ansible_dir}/group_vars
+    fi
+  fi
 
   ru_ansible_requirements
 
