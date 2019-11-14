@@ -1,5 +1,6 @@
 #!/usr/bin/env bash_unit
 
+[ -z "${RU_ENV_IMAGE}" ] && export RU_ENV_IMAGE=debian9
 . lib/role_unit
 
 test_i_have_a_system_to_connect_to() {

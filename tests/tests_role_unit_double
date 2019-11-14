@@ -2,6 +2,7 @@
 
 RU_COUNT=2
 
+[ -z "${RU_ENV_IMAGE}" ] && export RU_ENV_IMAGE=debian9
 . lib/role_unit
 
 test_i_have_two_containers() {
