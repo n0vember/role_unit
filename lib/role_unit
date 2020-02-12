@@ -17,21 +17,16 @@
 #    You should have received a copy of the GNU General Public License
 #    along with role_unit.  If not, see <http://www.gnu.org/licenses/>.
 
-ru_env_name="role_unit"
-ru_env_type="docker"
-ru_env_image="debian9"
-ru_count=1
-ru_debug=0
+### User environment
+
+ru_env_name=${RU_ENV_NAME:-role_unit}
+ru_env_image=${RU_ENV_IMAGE:-debian9}
+ru_env_type=${RU_ENV_TYPE:-docker}
+ru_count=${RU_COUNT:-1}
+ru_debug=${RU_DEBUG:-0}
 ru_first_debug=0
 ru_conf_file_name="ru.conf"
 
-### User environment
-
-[ -n "$RU_ENV_NAME" ] && ru_env_name="$RU_ENV_NAME"
-[ -n "$RU_ENV_IMAGE" ] && ru_env_image="$RU_ENV_IMAGE"
-[ -n "$RU_ENV_TYPE" ] && ru_env_type="$RU_ENV_TYPE"
-[ -n "$RU_COUNT" ] && ru_count="$RU_COUNT"
-[ -n "$RU_DEBUG" ] && ru_debug="$RU_DEBUG"
 [ -n "$RU_CONF" ] && ru_conf="$RU_CONF"
 [ -n "$RU_DEBUG" -a -z "$RU_CONF" ] && ru_first_debug=1
 
