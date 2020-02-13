@@ -17,6 +17,9 @@ stages:
     - RU_ENV_IMAGE=${CI_JOB_NAME} tests/bash_unit tests/tests_role_unit
   stage: images
 
+debian10:
+  <<: *distribution_testing_definition
+
 debian9:
   <<: *distribution_testing_definition
 
