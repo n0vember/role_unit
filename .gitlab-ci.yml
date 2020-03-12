@@ -29,6 +29,9 @@ debian9:
 debian8:
   <<: *distribution_testing_definition
 
+centos8:
+  <<: *distribution_testing_definition
+
 centos7:
   <<: *distribution_testing_definition
 
