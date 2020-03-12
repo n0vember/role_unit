@@ -115,6 +115,7 @@ There is only one mandatory environment variable, which is RU_ENV_IMAGE. It defi
 * debian 10 (buster)
 * debian 9 (stretch)
 * debian 8 (jessie)
+* centos 8
 * centos 7
 * centos 6
 * archlinux
