@@ -38,6 +38,9 @@ centos7:
 centos6:
   <<: *distribution_testing_definition
 
+archlinux:
+  <<: *distribution_testing_definition
+
 requirements:
   script:
     - RU_ENV_IMAGE=debian9 tests/bash_unit tests/tests_role_unit_requirements
