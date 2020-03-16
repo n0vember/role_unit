@@ -15,5 +15,5 @@ services:
 
 # Test jobs
 
-single_debian9:
+single_debian10:
   <<: *test_definition
