@@ -9,11 +9,11 @@ services:
 
 # Tests model
 
-.test_template: &test_definition
+.test_template:
   script:
     - RU_ENV_IMAGE=${CI_JOB_NAME/*_/} tests/bash_unit tests/tests_ROLE_NAME
 
 # Test jobs
 
 single_debian10:
-  <<: *test_definition
+  extends: .test_template
