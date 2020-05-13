@@ -78,6 +78,12 @@ Runs the specified command on all of the servers or just on the one specified. N
 
 If you specify -d option, this will launch command in a detached mode. There may be evolution in the future about that but for now those options must be sepcified in this order only.
 
+=== ru_assert_with_timeout -t T [ -n N ] cmd
+
+Similar to ru_run but will retry cmd every second until timeout T is expired or command returns a 0 exit code (whatever comes first). Return code will be the exit code of the last run of the command.
+
+This comes handy for instance if you start a service on the server and you want to wait until the service is effectively operational.
+
 === ru_ansible_fact [ -n N ] fact_name...
 
 Returns the specified ansible fact for all of the servers or just on the one specified. N is the number of the server you want to get the fact from.

@@ -180,6 +180,28 @@ ru_set_conf_file() {
   fi
 }
 
+ru_assert_with_timeout() {
+  local flag flagged=1 timeout server ret_code=1
+  while [ $flagged -gt 0 ]
+  do
+    flag="$1"
+    case "${flag}" in
+      -t) timeout=$2 ; shift 2 ;;
+      -n) server="-n $2" ; shift 2 ;;
+      *) flagged=0 ;;
+    esac
+  done
+  while [ ${timeout} -gt 0 ] ; do
+    ru_run ${server} "$@" >/dev/null 2>&1
+    ret_code=$?
+    test ${ret_code} -gt 0 || break
+    timeout=$((timeout-1))
+    test ${timeout} -gt 0 || break
+    sleep 1
+  done
+  return ${ret_code}
+}
+
 ### Set ansible environment
 
 ru_dir_init
