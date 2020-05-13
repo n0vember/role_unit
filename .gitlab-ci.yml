@@ -15,31 +15,31 @@ stages:
 before_script:
   - chmod o-w tests
 
-.distribution_testing: &distribution_testing_definition
+.distribution_testing:
   script:
     - RU_ENV_IMAGE=${CI_JOB_NAME} tests/bash_unit tests/tests_role_unit
   stage: images
 
 debian10:
-  <<: *distribution_testing_definition
+  extends: .distribution_testing
 
 debian9:
-  <<: *distribution_testing_definition
+  extends: .distribution_testing
 
 debian8:
-  <<: *distribution_testing_definition
+  extends: .distribution_testing
 
 centos8:
-  <<: *distribution_testing_definition
+  extends: .distribution_testing
 
 centos7:
-  <<: *distribution_testing_definition
+  extends: .distribution_testing
 
 centos6:
-  <<: *distribution_testing_definition
+  extends: .distribution_testing
 
 archlinux:
-  <<: *distribution_testing_definition
+  extends: .distribution_testing
 
 requirements:
   script:
