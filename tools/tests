@@ -18,6 +18,10 @@ test_that_succeeds() {
   assert "ru_run true"
 }
 
+test_idempotency() {
+  assert "$(ru_run_ansible_command) | grep 'changed=' | grep -v 'changed=[^0]'"
+}
+
 setup_suite() {
   ru_init
   ru_run_ansible verbose
