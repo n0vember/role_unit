@@ -8,6 +8,16 @@ test_i_am_in_a_docker_container() {
   assert_equals "docker" "$(ru_ansible_fact ansible_virtualization_type)"
 }
 
+test_detect_ubuntu_system() {
+  export RU_ISSUE_FILE=fixtures/ubuntu
+  assert "ru_host_is_ubuntu"
+}
+
+test_detect_non_ubuntu_system() {
+  export RU_ISSUE_FILE=fixtures/archlinux
+  assert_fails "ru_host_is_ubuntu"
+}
+
 test_process_can_be_launched_in_background() {
   ru_run -d sleep 60
   assert "ru_run pgrep sleep"
@@ -16,6 +26,10 @@ test_process_can_be_launched_in_background() {
 
 setup_suite() {
   ru_init
+}
+
+teardown() {
+  unset RU_ISSUE_FILE
 }
 
 # vim: syntax=sh

@@ -28,6 +28,17 @@ ru_docker_refresh="604800" # if docker images are older than this, they will be 
 
 declare -p ru_servers_names >/dev/null 2>&1 || declare -A ru_servers_names
 
+ru_host_is_ubuntu() {
+  local ru_issue_file="${RU_ISSUE_FILE:-/etc/issue}"
+  local ret_code=1
+  if [ -f "${ru_issue_file}" ] ; then
+    if grep ^Ubuntu ${ru_issue_file} >/dev/null ; then
+      ret_code=0
+    fi
+  fi
+  return ${ret_code}
+}
+
 ru_destroy() {
   local ru_server
   for ru_server in $(ru_server_nums)
@@ -65,6 +76,8 @@ ru_pull() {
 
 ru_init() {
   local ru_server
+  local ru_capacity="--cap-add=SYS_ADMIN"
+  ru_host_is_ubuntu && ru_capacity="--privileged"
   ru_dir_init
   if [ ${ru_debug} -eq 0 -o -z "${ru_conf}" ] ; then
     echo "RU_ENV_IMAGE=${ru_env_image}" >> ${ru_conf_file}
@@ -77,7 +90,7 @@ ru_init() {
       ru_info starting container $(ru_server ${ru_server})
       docker run \
         -d \
-        --cap-add=SYS_ADMIN \
+        ${ru_capacity} \
         --rm \
         --tmpfs /tmp \
         --tmpfs /run \
