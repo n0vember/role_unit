@@ -75,8 +75,8 @@ ru_server_nums() {
 }
 
 ru_server_num() {
-  local ru_num=$(printf "%02d" $1)
-  echo ${ru_num}
+  local ru_num="$1"
+  echo "${ru_num}"
 }
 
 ### Ansible management functions
