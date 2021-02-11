@@ -114,6 +114,14 @@ For instance, running ```ru_ansible_fact_filter anisble_default_ipv4``` will ret
 }
 ----
 
+=== ru_group group_name N...
+
+Calling ru_group will rearange inventory by creating a new inventory group containing servers which indexes are past as argument.
+
+This function comes with two others:
+- ru_groups will list all existing groups in inventory
+- ru_group_servers will list all servers in a group passed as argument
+
 === ru_server and ru_servers
 
 Those functions return either a single server name from index, or the list.

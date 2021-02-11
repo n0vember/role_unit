@@ -213,6 +213,35 @@ ru_assert_with_timeout() {
   return ${ret_code}
 }
 
+ru_groups() {
+  grep "^\[" ${ru_ansible_inventory} | tr -d "[]"
+}
+
+ru_group_servers() {
+  local group_name=$1
+  sed "/\[${group_name}\]/,/^\[/!d" ${ru_ansible_inventory} | grep -v "^\["
+}
+
+ru_group() {
+  local group_name=$1
+  shift
+  local servers=$@
+  local server group
+  for server in ${servers}
+  do
+    sed -i "/^$(ru_server_name ${server})$/d" ${ru_ansible_inventory}
+  done
+  echo "[${group_name}]" >> ${ru_ansible_inventory}
+  for server in ${servers}
+  do
+    echo "$(ru_server_name ${server})" >> ${ru_ansible_inventory}
+  done
+  for group in $(ru_groups)
+  do
+    [ -n "$(ru_group_servers ${group})" ] || sed -i "/^\[${group}\]/d" ${ru_ansible_inventory}
+  done
+}
+
 ### Set ansible environment
 
 ru_dir_init
