@@ -43,14 +43,14 @@ Full exemple of a role creation using role_init:
 Running tests in tests/tests_app
 starting container ru_role_unit_00
 applying ansible playbook
-Running test_that_succeeds... SUCCESS ✓ 
-Running test_that_succeeds_in_failure... SUCCESS ✓ 
+Running test_that_succeeds... SUCCESS ✓
+Running test_that_succeeds_in_failure... SUCCESS ✓
 stopping container ru_role_unit_00
 /tmp/app RU_ENV_TYPE=nocloud RU_ENV_IMAGE=debian9 tests/bash_unit tests/tests_app
 Running tests in tests/tests_app
 applying ansible playbook
-Running test_that_succeeds... SUCCESS ✓ 
-Running test_that_succeeds_in_failure... SUCCESS ✓ 
+Running test_that_succeeds... SUCCESS ✓
+Running test_that_succeeds_in_failure... SUCCESS ✓
 stopping machines
 ----
 
@@ -119,6 +119,7 @@ For instance, running ```ru_ansible_fact_filter anisble_default_ipv4``` will ret
 Calling ru_group will rearange inventory by creating a new inventory group containing servers which indexes are past as argument.
 
 This function comes with two others:
+
 - ru_groups will list all existing groups in inventory
 - ru_group_servers will list all servers in a group passed as argument
 
@@ -165,7 +166,7 @@ other role_unit variables may be used, but only to read values. Overwriting them
 * ru_ansible_playbook is an absolute path to the playbook that will be used by ru_run_ansible
 * ru_ansible_dir is the temporary working directory for the tests. You will for instance find the group_vars in it.
 
-For example of the usage you can made of these variables, have a look at the tests_tuto file in your tests directory. 
+For example of the usage you can made of these variables, have a look at the tests_tuto file in your tests directory.
 
 == about namespace
 
