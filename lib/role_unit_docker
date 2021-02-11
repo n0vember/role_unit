@@ -23,6 +23,7 @@ ru_docker_refresh="604800" # if docker images are older than this, they will be 
 ### User environment
 
 [ -n "$RU_ENV_DOCKER_REPO" ] && ru_env_docker_repo="$RU_ENV_DOCKER_REPO"
+ru_fixed_names=${RU_FIXED_NAMES:-0}
 
 ### Global functions
 
@@ -78,7 +79,7 @@ ru_pull() {
 }
 
 ru_init() {
-  local ru_server
+  local ru_server ru_server_name
   local ru_capacity="--cap-add=SYS_ADMIN"
   ru_host_needs_privileged && ru_capacity="--privileged"
   ru_dir_init
@@ -87,9 +88,7 @@ ru_init() {
     ru_pull ${ru_env_docker_repo}:${ru_env_image}
     for ru_server in $(ru_server_nums)
     do
-      local ru_server_name="${pu_env_name}_$(date +%s)"
-      which uuidgen >/dev/null 2>&1 && ru_server_name=$(uuidgen)
-      which uuid >/dev/null 2>&1 && ru_server_name=$(uuid)
+      [ ${ru_fixed_names} -eq 0 ] && ru_server_name=$(ru_uuid) || ru_server_name=${ru_env_name}_${ru_server}
       ru_info starting container $(ru_server ${ru_server})
       docker run \
         -d \

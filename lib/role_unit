@@ -81,10 +81,21 @@ ru_server_num() {
 
 ### Ansible management functions
 
+ru_uuid() {
+  if [ -f /proc/sys/kernel/random/uuid ] ; then
+    cat /proc/sys/kernel/random/uuid
+  elif which uuidgen >/dev/null 2>&1 ; then
+    uuidgen
+  elif which uuid >/dev/null 2>&1 ; then
+    uuid
+  else
+    date +%s
+  fi
+}
+
 ru_dir_init() {
   if [ ${ru_debug} -eq 0 -o -z "${ru_conf}" ] ; then
-    which uuidgen >/dev/null 2>&1 && ru_ansible_id=$(uuidgen)
-    which uuid >/dev/null 2>&1 && ru_ansible_id=$(uuid)
+    ru_ansible_id=$(ru_uuid)
     [ -z "${ru_ansible_id}" ] && ru_usage "Unable to get an uuid. Probably neither uuidgen nor uuid is installed."
     ru_ansible_dir=/tmp/ansible/${ru_ansible_id}
     mkdir -p ${ru_ansible_dir}
