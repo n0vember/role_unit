@@ -41,6 +41,11 @@ centos6:
 archlinux:
   extends: .distribution_testing
 
+inventory:
+  script:
+    - RU_ENV_IMAGE=debian9 tests/bash_unit tests/tests_role_unit_inventory
+  stage: library
+
 requirements:
   script:
     - RU_ENV_IMAGE=debian9 tests/bash_unit tests/tests_role_unit_requirements
