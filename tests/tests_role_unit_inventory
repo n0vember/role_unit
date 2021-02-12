@@ -8,8 +8,8 @@ export RU_COUNT=3
 . lib/role_unit
 
 test_i_can_get_machines_with_fixed_names() {
-  assert_equals "${ru_env_name}_00" "$(ru_server_name 0)"
-  assert_equals "${ru_env_name}_01" "$(ru_server_name 1)"
+  assert_equals "${ru_env_name}_0" "$(ru_server_name 0)"
+  assert_equals "${ru_env_name}_1" "$(ru_server_name 1)"
 }
 
 test_i_can_create_groups() {

@@ -68,15 +68,15 @@ ru_servers() {
 
 ru_server_nums() {
   local ru_num
-  for ru_num in $(seq -w 00 $((ru_count-1)))
+  for ru_num in $(seq 0 $((ru_count-1)))
   do
     echo ${ru_num}
   done
 }
 
 ru_server_num() {
-  local ru_num=$(printf "%02d" $1)
-  echo ${ru_num}
+  local ru_num="$1"
+  echo "${ru_num}"
 }
 
 ### Ansible management functions
@@ -219,7 +219,7 @@ ru_groups() {
 
 ru_group_servers() {
   local group_name=$1
-  sed "/\[${group_name}\]/,/^\[/!d" ${ru_ansible_inventory} | grep -v "^\["
+  sed -e "/\[${group_name}\]/,/^\[/!d" ${ru_ansible_inventory} | grep -v "^\["
 }
 
 ru_group() {
@@ -229,7 +229,7 @@ ru_group() {
   local server group
   for server in ${servers}
   do
-    sed -i "/^$(ru_server_name ${server})$/d" ${ru_ansible_inventory}
+    sed -i -e "/^$(ru_server_name ${server})$/d" ${ru_ansible_inventory}
   done
   echo "[${group_name}]" >> ${ru_ansible_inventory}
   for server in ${servers}
@@ -238,7 +238,7 @@ ru_group() {
   done
   for group in $(ru_groups)
   do
-    [ -n "$(ru_group_servers ${group})" ] || sed -i "/^\[${group}\]/d" ${ru_ansible_inventory}
+    [ -n "$(ru_group_servers ${group})" ] || sed -i -e "/^\[${group}\]/d" ${ru_ansible_inventory}
   done
 }
 
