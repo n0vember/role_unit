@@ -6,7 +6,7 @@ RU_COUNT=2
 . lib/role_unit
 
 test_i_have_two_containers() {
-  assert_equals "2" "$(ru_run hostname | wc -l)"
+  assert_equals "2" "$(ru_run hostname | wc -l | tr -d ' ')"
 }
 
 setup_suite() {
