@@ -219,7 +219,7 @@ ru_groups() {
 
 ru_group_servers() {
   local group_name=$1
-  sed "/\[${group_name}\]/,/^\[/!d" ${ru_ansible_inventory} | grep -v "^\["
+  sed -e "/\[${group_name}\]/,/^\[/!d" ${ru_ansible_inventory} | grep -v "^\["
 }
 
 ru_group() {
@@ -229,7 +229,7 @@ ru_group() {
   local server group
   for server in ${servers}
   do
-    sed -i "/^$(ru_server_name ${server})$/d" ${ru_ansible_inventory}
+    sed -i -e "/^$(ru_server_name ${server})$/d" ${ru_ansible_inventory}
   done
   echo "[${group_name}]" >> ${ru_ansible_inventory}
   for server in ${servers}
@@ -238,7 +238,7 @@ ru_group() {
   done
   for group in $(ru_groups)
   do
-    [ -n "$(ru_group_servers ${group})" ] || sed -i "/^\[${group}\]/d" ${ru_ansible_inventory}
+    [ -n "$(ru_group_servers ${group})" ] || sed -i -e "/^\[${group}\]/d" ${ru_ansible_inventory}
   done
 }
 
