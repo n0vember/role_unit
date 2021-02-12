@@ -68,7 +68,7 @@ ru_servers() {
 
 ru_server_nums() {
   local ru_num
-  for ru_num in $(seq -w 00 $((ru_count-1)))
+  for ru_num in $(seq 0 $((ru_count-1)))
   do
     echo ${ru_num}
   done
