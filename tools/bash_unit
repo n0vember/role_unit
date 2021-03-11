@@ -16,7 +16,7 @@
 #
 #  https://github.com/pgrange/bash_unit
 
-VERSION=v1.6.0
+VERSION=v1.7.1
 
 ESCAPE=$(printf "\033")
 NOCOLOR="${ESCAPE}[0m"
@@ -25,10 +25,16 @@ GREEN="${ESCAPE}[92m"
 YELLOW="${ESCAPE}[93m"
 BLUE="${ESCAPE}[94m"
 
+# Make bash_unit immune to some basic unix commands faking
+CAT="$(which cat)"
+SED="$(which sed)"
+GREP="$(which grep)"
+RM="$(which rm)"
+
 fail() {
-  local message=$1
-  local stdout=$2
-  local stderr=$3
+  local message=${1:-}
+  local stdout=${2:-}
+  local stderr=${3:-}
 
   notify_test_failed "$__bash_unit_current_test__" "$message"
   [[ ! -z $stdout ]] && [ -s "$stdout" ] && notify_stdout < "$stdout"
@@ -40,7 +46,7 @@ fail() {
 
 assert() {
   local assertion=$1
-  local message=$2
+  local message=${2:-}
 
   _assert_expression \
     "$assertion" \
@@ -50,7 +56,7 @@ assert() {
 
 assert_fails() {
   local assertion=$1
-  local message=$2
+  local message=${2:-}
 
   _assert_expression \
     "$assertion" \
@@ -66,7 +72,7 @@ assert_fail() {
 assert_status_code() {
   local expected_status=$1
   local assertion="$2"
-  local message="$3"
+  local message="${3:-}"
 
   _assert_expression \
     "$assertion" \
@@ -81,7 +87,7 @@ _assert_expression() {
   (
     local stdout=$(mktemp)
     local stderr=$(mktemp)
-    trap "rm  -f \"$stdout\" \"$stderr\"" EXIT
+    trap "$RM  -f \"$stdout\" \"$stderr\"" EXIT
 
     local status
     eval "($assertion)" >"$stdout" 2>"$stderr" && status=$? || status=$?
@@ -95,7 +101,7 @@ _assert_expression() {
 assert_equals() {
   local expected=$1
   local actual=$2
-  local message=$3
+  local message=${3:-}
   [[ -z $message ]] || message="$message\n"
   
   if [ "$expected" != "$actual" ]
@@ -107,7 +113,7 @@ assert_equals() {
 assert_not_equals() {
   local unexpected=$1
   local actual=$2
-  local message=$3
+  local message=${3:-}
   [[ -z $message ]] || message="$message\n"
 
   [ "$unexpected" != "$actual" ] || \
@@ -121,45 +127,45 @@ fake() {
   then
     eval "function $command() { export FAKE_PARAMS=\"\$@\" ; $@ ; }"
   else
-    eval "function $command() { echo \"$(cat)\" ; }"
+    eval "function $command() { echo \"$($CAT)\" ; }"
   fi
   export -f $command
 }
 
 stacktrace() {
   local i=1
-  while ! [ -z "${BASH_SOURCE[$i]}" ]
+  while ! [ -z "${BASH_SOURCE[$i]:-}" ]
   do
     echo ${BASH_SOURCE[$i]}:${BASH_LINENO[$((i-1))]}:${FUNCNAME[$i]}\(\)
     i=$((i + 1))
-  done | grep -v "^$BASH_SOURCE"
+  done | "$GREP" -v "^$BASH_SOURCE"
 }
 
 run_test_suite() {
   local failure=0
 
-  declare -F | grep ' setup_suite$' >/dev/null && setup_suite
+  declare -F | "$GREP" ' setup_suite$' >/dev/null && setup_suite
 
-  for pending_test in $(set | grep  -E '^(pending|todo).* \(\)' | grep -E "$test_pattern" | sed -e 's: .*::')
+  for pending_test in $(set | "$GREP"  -E '^(pending|todo).* \(\)' | "$GREP" -E "$test_pattern" | "$SED" -e 's: .*::')
   do
     notify_test_starting "$pending_test"
     notify_test_pending "$pending_test"
   done
 
 
-  for test in $(set | grep  -E '^test.* \(\)' | grep -E "$test_pattern" | sed -e 's: .*::')
+  for test in $(set | "$GREP"  -E '^test.* \(\)' | "$GREP" -E "$test_pattern" | "$SED" -e 's: .*::')
   do
     (
       local status=0
-      declare -F | grep ' setup$' >/dev/null && setup
+      declare -F | "$GREP" ' setup$' >/dev/null && setup
       (__bash_unit_current_test__="$test" run_test) || status=$?
-      declare -F | grep ' teardown$' >/dev/null && teardown
+      declare -F | "$GREP" ' teardown$' >/dev/null && teardown
       exit $status
     )
     failure=$(( $? || failure))
   done
 
-  declare -F | grep ' teardown_suite$' >/dev/null && teardown_suite
+  declare -F | "$GREP" ' teardown_suite$' >/dev/null && teardown_suite
 
   return $failure
 }
@@ -184,7 +190,7 @@ usage() {
 # Formating
 
 pretty_success() {
-  pretty_format "$GREEN" "\u2713" "$1"
+  pretty_format "$GREEN" "\u2713" "${1:-}"
 }
 
 pretty_warning() {
@@ -192,7 +198,7 @@ pretty_warning() {
 }
 
 pretty_failure() {
-  pretty_format "$RED" "\u2717" "$1"
+  pretty_format "$RED" "\u2717" "${1:-}"
 }
 
 pretty_format() {
@@ -205,7 +211,7 @@ pretty_format() {
     term_utf8=true
   fi
   (
-    cat
+    $CAT
     if $term_utf8
     then
       echo -en " $pretty_symbol "
@@ -229,7 +235,7 @@ color() {
   then
     echo $*
   else
-    cat
+    $CAT
   fi
   _stop_color
 }
@@ -263,10 +269,10 @@ text_format() {
     [[ -z $message  ]] || printf -- "$message\n"
   }
   notify_stdout() {
-    sed 's:^:out> :' | color "$GREEN"
+    "$SED" 's:^:out> :' | color "$GREEN"
   }
   notify_stderr() {
-    sed 's:^:err> :' | color "$RED"
+    "$SED" 's:^:err> :' | color "$RED"
   }
   notify_stack() {
     color "$YELLOW"
@@ -297,16 +303,16 @@ tap_format() {
     local message="$2"
     echo -n "not ok" | pretty_failure -
     echo "$test" | color "$BLUE"
-    [[ -z $message  ]] || printf -- "$message\n" | sed -u -e 's/^/# /'
+    [[ -z $message  ]] || printf -- "$message\n" | "$SED" -u -e 's/^/# /'
   }
   notify_stdout() {
-    sed 's:^:# out> :' | color "$GREEN"
+    "$SED" 's:^:# out> :' | color "$GREEN"
   }
   notify_stderr() {
-    sed 's:^:# err> :' | color "$RED"
+    "$SED" 's:^:# err> :' | color "$RED"
   }
   notify_stack() {
-    sed 's:^:# :' | color "$YELLOW"
+    "$SED" 's:^:# :' | color "$YELLOW"
   }
 }
 
@@ -358,6 +364,8 @@ for test_file in "$@"
 do
   notify_suite_starting "$test_file"
   (
+    set -e # Ensure bash_unit with exit with failure
+           # in case of syntax error.
     if [[ "${STICK_TO_CWD}" != true ]]
     then
       cd "$(dirname "$test_file")"
@@ -365,6 +373,7 @@ do
     else
       source "$test_file"
     fi
+    set +e
     run_test_suite
   )
   failure=$(( $? || failure))
