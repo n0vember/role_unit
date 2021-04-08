@@ -1,0 +1,21 @@
+#!/usr/bin/env bash_unit
+
+[ -z "${RU_ENV_IMAGE}" ] && export RU_ENV_IMAGE=debian9
+. lib/role_unit
+
+test_i_am_in_a_docker_container() {
+  assert_equals "guest" "$(ru_ansible_fact ansible_virtualization_role)"
+  assert_equals "container" "$(ru_ansible_fact ansible_virtualization_type)"
+}
+
+test_process_can_be_launched_in_background() {
+  ru_run -d sleep 60
+  assert "ru_run pgrep sleep"
+  ru_run pkill sleep
+}
+
+setup_suite() {
+  ru_init
+}
+
+# vim: syntax=sh

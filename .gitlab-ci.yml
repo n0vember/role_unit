@@ -50,6 +50,11 @@ docker:
     - RU_ENV_IMAGE=debian11 tests/bash_unit tests/tests_role_unit_docker
   stage: library
 
+podman:
+  script:
+    - RU_ENV_IMAGE=debian9 tests/bash_unit tests/tests_role_unit_podman
+  stage: library
+
 multiplicity:
   script:
     - RU_ENV_IMAGE=debian11 tests/bash_unit tests/tests_role_unit_double
