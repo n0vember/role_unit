@@ -2,6 +2,7 @@ image: registry.gitlab.com/role_unit/role_unit_containers:build
 
 variables:
   DOCKER_DRIVER: overlay2
+  STORAGE_DRIVER: vfs
   DEBIAN_FRONTEND: noninteractive
 
 services:
