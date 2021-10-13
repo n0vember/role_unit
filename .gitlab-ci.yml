@@ -55,6 +55,11 @@ multiplicity:
     - RU_ENV_IMAGE=debian11 tests/bash_unit tests/tests_role_unit_double
   stage: library
 
+groups:
+  script:
+    - RU_ENV_IMAGE=debian11 tests/bash_unit tests/tests_role_unit_groups
+  stage: library
+
 simultaneity:
   script:
     - tests/bash_unit tests/tests_run_the_same_twice

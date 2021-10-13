@@ -1,0 +1,27 @@
+#!/usr/bin/env bash_unit
+
+RU_COUNT=4
+RU_ENV_NAME=ru_group
+
+[ -z "${RU_ENV_IMAGE}" ] && export RU_ENV_IMAGE=debian11
+. lib/role_unit
+
+test_i_have_4_containers() {
+  assert_equals "4" "$(ru_run hostname | wc -l | tr -d ' ')"
+}
+
+test_i_have_2_containers_in_main_group() {
+  assert_equals "2" "$(ru_group_servers main | wc -l)"
+}
+
+test_i_have_2_containers_in_alternate_group() {
+  assert_equals "2" "$(ru_group_servers alternate | wc -l)"
+}
+
+setup_suite() {
+  ru_init
+  ru_group main 0 1
+  ru_group alternate 2 3
+}
+
+# vim: syntax=sh
