@@ -20,13 +20,10 @@ before_script:
     - RU_ENV_IMAGE=${CI_JOB_NAME} tests/bash_unit tests/tests_role_unit
   stage: images
 
+debian11:
+  extends: .distribution_testing
+
 debian10:
-  extends: .distribution_testing
-
-debian9:
-  extends: .distribution_testing
-
-debian8:
   extends: .distribution_testing
 
 centos8:
@@ -35,30 +32,27 @@ centos8:
 centos7:
   extends: .distribution_testing
 
-centos6:
-  extends: .distribution_testing
-
 archlinux:
   extends: .distribution_testing
 
 inventory:
   script:
-    - RU_ENV_IMAGE=debian9 tests/bash_unit tests/tests_role_unit_inventory
+    - RU_ENV_IMAGE=debian11 tests/bash_unit tests/tests_role_unit_inventory
   stage: library
 
 requirements:
   script:
-    - RU_ENV_IMAGE=debian9 tests/bash_unit tests/tests_role_unit_requirements
+    - RU_ENV_IMAGE=debian11 tests/bash_unit tests/tests_role_unit_requirements
   stage: library
 
 docker:
   script:
-    - RU_ENV_IMAGE=debian9 tests/bash_unit tests/tests_role_unit_docker
+    - RU_ENV_IMAGE=debian11 tests/bash_unit tests/tests_role_unit_docker
   stage: library
 
 multiplicity:
   script:
-    - RU_ENV_IMAGE=debian9 tests/bash_unit tests/tests_role_unit_double
+    - RU_ENV_IMAGE=debian11 tests/bash_unit tests/tests_role_unit_double
   stage: library
 
 simultaneity:

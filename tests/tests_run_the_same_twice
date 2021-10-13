@@ -1,7 +1,7 @@
 #!/usr/bin/env bash_unit
 
 test_i_can_launch_twice_the_same_test() {
-  export RU_ENV_IMAGE=debian9
+  export RU_ENV_IMAGE=debian11
   test1_output=$(./bash_unit tests_role_unit 2>&1 &)
   test2_output=$(./bash_unit tests_role_unit 2>&1 &)
   wait

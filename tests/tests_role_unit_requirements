@@ -1,7 +1,7 @@
 #!/usr/bin/env bash_unit
 
 RU_ENV_NAME=ru_req
-RU_ENV_IMAGE=debian10
+RU_ENV_IMAGE=debian11
 
 DEP_NAME=dummy_role
 DEP_URL=https://gitlab.com/role_unit/${DEP_NAME}.git

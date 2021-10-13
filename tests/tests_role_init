@@ -55,7 +55,7 @@ teardown() {
 role_test_by_name() {
   local role_name=$1
   # launch tests
-  export RU_ENV_IMAGE=debian9
+  export RU_ENV_IMAGE=debian11
   local test_output=$(${tmp_dir}/${role_name}/tests/bash_unit ${tmp_dir}/${role_name}/tests/tests_${role_name} 2>&1 &)
   wait
   local success_result=$(grep 'Running test_that_succeeds... SUCCESS' <(echo -e "${test_output}") | wc -l | tr -d ' ')

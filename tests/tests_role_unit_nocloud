@@ -1,7 +1,7 @@
 #!/usr/bin/env bash_unit
 
 RU_ENV_TYPE=nocloud
-RU_ENV_IMAGE=debian9
+RU_ENV_IMAGE=debian11
 
 . lib/role_unit
 
