@@ -16,7 +16,7 @@
 #
 #  https://github.com/pgrange/bash_unit
 
-VERSION=v1.7.1
+VERSION=v1.7.2
 
 ESCAPE=$(printf "\033")
 NOCOLOR="${ESCAPE}[0m"
@@ -144,7 +144,26 @@ stacktrace() {
 run_test_suite() {
   local failure=0
 
-  declare -F | "$GREP" ' setup_suite$' >/dev/null && setup_suite
+  if run_setup_suite
+  then
+    run_tests || failure=$?
+  else
+    failure=$?
+  fi
+  run_teardown_suite
+
+  return $failure
+}
+
+run_setup_suite() {
+  if declare -F | "$GREP" ' setup_suite$' >/dev/null
+  then
+    setup_suite
+  fi
+}
+
+run_tests() {
+  local failure=0
 
   for pending_test in $(set | "$GREP"  -E '^(pending|todo).* \(\)' | "$GREP" -E "$test_pattern" | "$SED" -e 's: .*::')
   do
@@ -164,9 +183,6 @@ run_test_suite() {
     )
     failure=$(( $? || failure))
   done
-
-  declare -F | "$GREP" ' teardown_suite$' >/dev/null && teardown_suite
-
   return $failure
 }
 
@@ -176,9 +192,16 @@ run_test() {
   "$__bash_unit_current_test__" && notify_test_succeeded "$__bash_unit_current_test__"
 }
 
+run_teardown_suite() {
+  if declare -F | "$GREP" ' teardown_suite$' >/dev/null
+  then
+    teardown_suite
+  fi
+}
+
 usage() {
   echo "$1" >&2
-  echo "$0 [-f <output format>] [-p <pattern1>] [-p <pattern2>]... <test_file1> <test_file2>..." >&2
+  echo "$0 [-f <output format>] [-p <pattern1>] [-p <pattern2>] ... <test_file1> <test_file2> ..." >&2
   echo >&2
   echo "Runs tests in test files that match <pattern>s" >&2
   echo "<output format> is optional only supported value is tap" >&2
@@ -251,7 +274,7 @@ text_format() {
   }
   notify_test_starting() {
     local test="$1"
-    echo -n "Running $test... " | color "$BLUE"
+    echo -e -n "\tRunning $test ... " | color "$BLUE"
   }
   notify_test_pending() {
     echo -n "PENDING" | pretty_warning
@@ -354,7 +377,7 @@ case "$output_format" in
     tap_format
     ;;
   *)
-    usage "unsupproted output format: $output_format"
+    usage "unsupported output format: $output_format"
     ;;
 esac
 
@@ -364,7 +387,7 @@ for test_file in "$@"
 do
   notify_suite_starting "$test_file"
   (
-    set -e # Ensure bash_unit with exit with failure
+    set -e # Ensure bash_unit will exit with failure
            # in case of syntax error.
     if [[ "${STICK_TO_CWD}" != true ]]
     then
