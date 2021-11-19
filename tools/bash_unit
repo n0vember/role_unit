@@ -16,7 +16,7 @@
 #
 #  https://github.com/pgrange/bash_unit
 
-VERSION=v1.7.2
+VERSION=v1.8.0
 
 ESCAPE=$(printf "\033")
 NOCOLOR="${ESCAPE}[0m"
@@ -30,6 +30,7 @@ CAT="$(which cat)"
 SED="$(which sed)"
 GREP="$(which grep)"
 RM="$(which rm)"
+SHUF="$(which shuf)"
 
 fail() {
   local message=${1:-}
@@ -120,6 +121,16 @@ assert_not_equals() {
     fail "$message expected different value than [$unexpected] but was the same"
 }
 
+assert_no_diff() {
+  local expected=$1
+  local actual=$2
+  local message=${3:-}
+  [[ -z $message ]] || message="$message\n"
+
+  diff "${expected}" "${actual}" >/dev/null || \
+    fail "$message expected '${actual}' to be identical to '${expected}' but was different"
+}
+
 fake() {
   local command=$1
   shift
@@ -162,6 +173,10 @@ run_setup_suite() {
   fi
 }
 
+maybe_shuffle() {
+  ((randomise)) && $SHUF || $CAT
+}
+
 run_tests() {
   local failure=0
 
@@ -172,7 +187,7 @@ run_tests() {
   done
 
 
-  for test in $(set | "$GREP"  -E '^test.* \(\)' | "$GREP" -E "$test_pattern" | "$SED" -e 's: .*::')
+  for test in $(set | "$GREP"  -E '^test.* \(\)' | "$GREP" -E "$test_pattern" | "$SED" -e 's: .*::' | maybe_shuffle)
   do
     (
       local status=0
@@ -201,10 +216,11 @@ run_teardown_suite() {
 
 usage() {
   echo "$1" >&2
-  echo "$0 [-f <output format>] [-p <pattern1>] [-p <pattern2>] ... <test_file1> <test_file2> ..." >&2
+  echo "$0 [-f <output format>] [-p <pattern1>] [-p <pattern2>] [-r] ... <test_file1> <test_file2> ..." >&2
   echo >&2
   echo "Runs tests in test files that match <pattern>s" >&2
   echo "<output format> is optional only supported value is tap" >&2
+  echo "-r to execute test cases in random order" >&2
   echo "-v to get current version information" >&2
   echo "See https://github.com/pgrange/bash_unit" >&2
   exit 1
@@ -227,9 +243,10 @@ pretty_failure() {
 pretty_format() {
   local color="$1"
   local pretty_symbol="$2"
-  local alt_symbol="$3"
+  local alt_symbol="${3:-}"
   local term_utf8=false
-  if is_terminal && [[ "$LANG" =~ .*UTF-8.* ]]
+#env
+  if is_terminal && [[ "${LANG:-}" =~ .*UTF-8.* ]]
   then
     term_utf8=true
   fi
@@ -264,7 +281,7 @@ color() {
 }
 
 is_terminal() {
-  [ -t 1 ] || [[ "${FORCE_COLOR}" == true ]]
+  [ -t 1 ] || [[ "${FORCE_COLOR:-}" == true ]]
 }
 
 text_format() {
@@ -300,6 +317,14 @@ text_format() {
   notify_stack() {
     color "$YELLOW"
   }
+  notify_suites_succeded() {
+    echo -n "Overall result: SUCCESS" | pretty_success
+    echo
+  }
+  notify_suites_failed() {
+    echo -n "Overall result: FAILURE" | pretty_failure
+    echo
+  }
 }
 
 tap_format() {
@@ -308,7 +333,7 @@ tap_format() {
     echo "# Running tests in $test_file"
   }
   notify_test_starting() {
-    echo -n
+    :
   }
   notify_test_pending() {
     local test="$1"
@@ -337,12 +362,19 @@ tap_format() {
   notify_stack() {
     "$SED" 's:^:# :' | color "$YELLOW"
   }
+  notify_suites_succeded() {
+    :
+  }
+  notify_suites_failed() {
+    :
+  }
 }
 
 output_format=text
 test_pattern=""
 separator=""
-while getopts "vp:f:" option
+randomise=0
+while getopts "vp:f:r" option
 do
   case "$option" in
     p)
@@ -351,6 +383,9 @@ do
       ;;
     f)
       output_format="${OPTARG}"
+      ;;
+    r)
+      randomise=1
       ;;
     v)
       echo "bash_unit $VERSION"
@@ -401,4 +436,12 @@ do
   )
   failure=$(( $? || failure))
 done
+
+if ((failure))
+then
+  notify_suites_failed
+else
+  notify_suites_succeded
+fi
+
 exit $failure
