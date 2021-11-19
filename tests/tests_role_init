@@ -16,9 +16,6 @@ test_role_init_proposes_a_default_gitlab-ci_config() {
   local tst_role_name=ru_tst
   (cd ${tmp_dir} ; ${role_init_dir}/role_init ${tst_role_name})
   # check role has been created
-  echo debug
-  diff expected/test_role_init_gitlab-ci.yml ${tmp_dir}/${tst_role_name}/.gitlab-ci.yml
-  echo end debug
   assert "diff expected/test_role_init_gitlab-ci.yml ${tmp_dir}/${tst_role_name}/.gitlab-ci.yml"
 }
 
@@ -61,6 +58,15 @@ role_test_by_name() {
   export RU_ENV_IMAGE=debian11
   local test_output=$(${tmp_dir}/${role_name}/tests/bash_unit ${tmp_dir}/${role_name}/tests/tests_${role_name} 2>&1 &)
   wait
+cat <<EOF
+
+DEBUG
+
+${test_output}
+
+END DEBUG
+
+EOF
   local success_result=$(grep 'Running test_that_succeeds... SUCCESS' <(echo -e "${test_output}") | wc -l | tr -d ' ')
   local failing_result=$(grep 'Running test_that_succeeds_in_failure... SUCCESS' <(echo -e "${test_output}") | wc -l | tr -d ' ')
   # check result
