@@ -67,8 +67,8 @@ ${test_output}
 END DEBUG
 
 EOF
-  local success_result=$(grep 'Running test_that_succeeds... SUCCESS' <(echo -e "${test_output}") | wc -l | tr -d ' ')
-  local failing_result=$(grep 'Running test_that_succeeds_in_failure... SUCCESS' <(echo -e "${test_output}") | wc -l | tr -d ' ')
+  local success_result=$(grep 'Running test_that_succeeds[. ]*SUCCESS' <(echo -e "${test_output}") | wc -l | tr -d ' ')
+  local failing_result=$(grep 'Running test_that_succeeds_in_failure[. ]*SUCCESS' <(echo -e "${test_output}") | wc -l | tr -d ' ')
   # check result
   assert_equals "1" "${success_result}"
   assert_equals "1" "${failing_result}"
