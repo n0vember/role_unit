@@ -16,6 +16,9 @@ test_role_init_proposes_a_default_gitlab-ci_config() {
   local tst_role_name=ru_tst
   (cd ${tmp_dir} ; ${role_init_dir}/role_init ${tst_role_name})
   # check role has been created
+  echo debug
+  diff expected/test_role_init_gitlab-ci.yml ${tmp_dir}/${tst_role_name}/.gitlab-ci.yml
+  echo end debug
   assert "diff expected/test_role_init_gitlab-ci.yml ${tmp_dir}/${tst_role_name}/.gitlab-ci.yml"
 }
 
