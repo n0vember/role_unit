@@ -17,6 +17,7 @@
 
 ru_env_cnx="podman"
 ru_env_podman_repo="registry.gitlab.com/role_unit/role_unit_containers"
+export ANSIBLE_PIPELINING="False"
 
 ### User environment
 
