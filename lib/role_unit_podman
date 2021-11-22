@@ -64,6 +64,7 @@ ru_init() {
         -d \
         ${ru_capacity} \
         --rm \
+        --net=bridge \
         --tmpfs /tmp \
         --tmpfs /run \
         -v /sys/fs/cgroup:/sys/fs/cgroup:ro \
