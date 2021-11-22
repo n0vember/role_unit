@@ -2,6 +2,7 @@ image: registry.gitlab.com/role_unit/role_unit_containers:build
 
 variables:
   DOCKER_DRIVER: overlay2
+  STORAGE_DRIVER: vfs
   DEBIAN_FRONTEND: noninteractive
 
 services:
@@ -48,6 +49,14 @@ requirements:
 docker:
   script:
     - RU_ENV_IMAGE=debian11 tests/bash_unit tests/tests_role_unit_docker
+  stage: library
+
+podman:
+  script:
+    - echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories
+    - apk update
+    - apk add podman
+    - RU_ENV_IMAGE=debian11 tests/bash_unit tests/tests_role_unit_podman
   stage: library
 
 multiplicity:
