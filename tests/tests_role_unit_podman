@@ -10,7 +10,7 @@ test_i_am_in_a_podman_container() {
 }
 
 test_process_can_be_launched_in_background() {
-  ru_run -d sleep 60
+  ru_run -d sleep 60 > /dev/null
   assert "ru_run pgrep sleep"
   ru_run pkill sleep
 }
