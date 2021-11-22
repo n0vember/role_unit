@@ -1,7 +1,7 @@
 #!/usr/bin/env bash_unit
 
 RU_ENV_TYPE=podman
-[ -z "${RU_ENV_IMAGE}" ] && export RU_ENV_IMAGE=debian10
+[ -z "${RU_ENV_IMAGE}" ] && export RU_ENV_IMAGE=debian11
 . lib/role_unit
 
 test_i_am_in_a_podman_container() {
