@@ -20,7 +20,7 @@
 ### User environment
 
 ru_env_name=${RU_ENV_NAME:-role_unit}
-ru_env_image=${RU_ENV_IMAGE:-debian9}
+ru_env_image=${RU_ENV_IMAGE:-debian11}
 ru_env_type=${RU_ENV_TYPE:-docker}
 ru_count=${RU_COUNT:-1}
 ru_debug=${RU_DEBUG:-0}
