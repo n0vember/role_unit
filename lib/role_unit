@@ -26,6 +26,7 @@ ru_count=${RU_COUNT:-1}
 ru_debug=${RU_DEBUG:-0}
 ru_first_debug=0
 ru_conf_file_name="ru.conf"
+ru_tmp_dir=${TMPDIR:-/tmp}
 
 [ -n "$RU_CONF" ] && ru_conf="$RU_CONF"
 [ -n "$RU_DEBUG" -a -z "$RU_CONF" ] && ru_first_debug=1
@@ -97,7 +98,7 @@ ru_dir_init() {
   if [ ${ru_debug} -eq 0 -o -z "${ru_conf}" ] ; then
     ru_ansible_id=$(ru_uuid)
     [ -z "${ru_ansible_id}" ] && ru_usage "Unable to get an uuid. Probably neither uuidgen nor uuid is installed."
-    ru_ansible_dir=/tmp/ansible/${ru_ansible_id}
+    ru_ansible_dir=${ru_tmp_dir}/ansible/${ru_ansible_id}
     mkdir -p ${ru_ansible_dir}
     ru_conf_file=${ru_ansible_dir}/${ru_conf_file_name}
     echo "ru_ansible_id=${ru_ansible_id}" >> ${ru_conf_file}
