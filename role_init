@@ -108,8 +108,9 @@ role_unit_dir=$(dirname $(read_link $0))
 
 while [ $# -ge 1 ]
 do
-  create_an_ansible_role $1
-  make_directory_testable $1
-  [ ${verbose_mode} -eq 1 ] && explain $1
+  role_name=$(echo "$1" | sed 's,/$,,')
+  create_an_ansible_role ${role_name}
+  make_directory_testable ${role_name}
+  [ ${verbose_mode} -eq 1 ] && explain ${role_name}
   shift
 done

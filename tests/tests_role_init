@@ -11,6 +11,14 @@ test_role_init_creates_the_role_directory() {
   assert "test -d ${tmp_dir}/${tst_role_name}"
 }
 
+test_role_init_removes_trailing_slash_from_role_name() {
+  # create a role
+  local tst_role_name=ru_tst/
+  (cd ${tmp_dir} ; ${role_init_dir}/role_init ${tst_role_name})
+  # check role has been created
+  assert "test -d ${tmp_dir}/${tst_role_name}"
+}
+
 test_role_init_proposes_a_default_gitlab-ci_config() {
   # create a role
   local tst_role_name=ru_tst

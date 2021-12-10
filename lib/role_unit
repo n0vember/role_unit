@@ -23,6 +23,7 @@ ru_env_name=${RU_ENV_NAME:-role_unit}
 ru_env_image=${RU_ENV_IMAGE:-debian11}
 ru_env_type=${RU_ENV_TYPE:-docker}
 ru_backend=${RU_BACKEND:-docker}
+ru_frontend=${RU_FRONTEND:-ansible}
 ru_count=${RU_COUNT:-1}
 ru_debug=${RU_DEBUG:-0}
 ru_first_debug=0
@@ -102,104 +103,7 @@ ru_server_num() {
   echo "${ru_num}"
 }
 
-### Ansible management functions
-
-ru_dir_init() {
-  if [ ${ru_debug} -eq 0 -o -z "${ru_conf}" ] ; then
-    ru_ansible_id=$(ru_uuid)
-    ru_ansible_dir=${ru_tmp_dir}/ansible/${ru_ansible_id}
-    mkdir -p ${ru_ansible_dir}
-    ru_conf_file=${ru_ansible_dir}/${ru_conf_file_name}
-    echo "ru_ansible_id=${ru_ansible_id}" >> ${ru_conf_file}
-    echo "ru_ansible_dir=${ru_ansible_dir}" >> ${ru_conf_file}
-  fi
-  ru_set_conf_file
-  . ${ru_conf_file}
-}
-
-ru_ansible_requirements() {
-  if [ -f requirements.yml ] ; then
-    ru_info fetching requirements
-    ansible-galaxy install --force --roles-path ${ru_ansible_dir}/roles/ -r requirements.yml
-  fi
-}
-
-ru_ansible_init() {
-  if [ ${ru_debug} -eq 0 -o -z "${ru_conf}" ] ; then
-    echo "ru_ansible_inventory=${ru_ansible_dir}/inventory" >> ${ru_conf_file}
-    echo "ru_ansible_playbook=${ru_ansible_dir}/playbook.yml" >> ${ru_conf_file}
-    echo "ru_ansible_roledir=${ru_ansible_dir}/roles" >> ${ru_conf_file}
-  fi
-  . ${ru_conf_file}
-
-  mkdir -p ${ru_ansible_roledir}
-  [ ! -L ${ru_ansible_roledir}/${ru_env_name} ] && ln -s $PWD/.. ${ru_ansible_roledir}/${ru_env_name}
-  if [ -d ${ru_ansible_dir}/group_vars ] ; then
-    rm -r ${ru_ansible_dir}/group_vars
-  fi
-  if [ ! -L ${ru_ansible_dir}/group_vars ] ; then
-    if [ -d group_vars ] ; then
-      cp -r $PWD/group_vars ${ru_ansible_dir}/group_vars
-    else
-      mkdir -p ${ru_ansible_dir}/group_vars
-    fi
-  fi
-
-  ru_ansible_requirements
-
-  [ ! -f ${ru_ansible_playbook} ] && cat > ${ru_ansible_playbook} << EOF
-- hosts: ${ru_env_name}
-  roles:
-    - ${ru_env_name}
-EOF
-}
-
-ru_run_ansible_command() {
-  local ru_skip_tags
-  [ ${ru_debug} -eq 1 -a ${ru_first_debug} -ne 1 ] && ru_skip_tags="--skip-tags ru_once_debug"
-  echo "ansible-playbook --verbose --diff -i ${ru_ansible_inventory} --connection=${ru_env_cnx} ${ru_ansible_playbook} ${ru_skip_tags}"
-}
-
-ru_run_ansible() {
-  if [ $# -gt 0 -a "$1" == "verbose" ] ; then
-    ru_info applying ansible playbook
-  fi
-  assert "$(ru_run_ansible_command)"
-}
-
-ru_run_ansible_module() {
-  ansible --verbose --diff -i ${ru_ansible_inventory} --connection=${ru_env_cnx} all $@
-}
-
-ru_ansible_facts() {
-  local ru_server_names=$(ru_server_names)
-  [ "$1" == "-n" ] && ru_server_names=$(ru_server_name $2) && shift 2
-  ru_server_names=$(echo -e "${ru_server_names}" | tr "\n" ",")
-  ansible -i ${ru_ansible_inventory} --connection=${ru_env_cnx} ${ru_server_names} -m setup
-}
-
-ru_ansible_fact() {
-  local ru_servers
-  [ "$1" == "-n" ] && ru_servers="-n $2" && shift 2
-  local fact=$1
-  ru_ansible_facts ${ru_servers} | grep "\"${fact}\"" | tr -d '" ,' | cut -d ":" -f 2
-}
-
-ru_ansible_fact_filter() {
-  local ru_servers
-  [ "$1" == "-n" ] && ru_server_names=$(ru_server_name $2) && shift 2
-  ru_server_names=$(echo -e "${ru_server_names}" | tr "\n" ",")
-  local filter=$1
-  ansible -i ${ru_ansible_inventory} --connection=${ru_env_cnx} ${ru_server_names} -m setup -a "filter=${filter}"
-}
-
-ru_set_conf_file() {
-  if [ ${ru_debug} -eq 1 -a -n "${ru_conf}" ] ; then
-    ru_conf_file=${ru_conf}
-  else
-    ru_conf_file=${ru_ansible_dir}/${ru_conf_file_name}
-  fi
-}
+### test management functions
 
 ru_assert_with_timeout() {
   local flag flagged=1 timeout server ret_code=1
@@ -223,39 +127,11 @@ ru_assert_with_timeout() {
   return ${ret_code}
 }
 
-ru_groups() {
-  grep "^\[" ${ru_ansible_inventory} | tr -d "[]"
-}
+### Set frontend environment
 
-ru_group_servers() {
-  local group_name=$1
-  sed -e "/\[${group_name}\]/,/^\[/!d" ${ru_ansible_inventory} | grep -v "^\["
-}
-
-ru_group() {
-  local group_name=$1
-  shift
-  local servers=$@
-  local server group
-  for server in ${servers}
-  do
-    sed -i -e "/^$(ru_server_name ${server})$/d" ${ru_ansible_inventory}
-  done
-  echo "[${group_name}]" >> ${ru_ansible_inventory}
-  for server in ${servers}
-  do
-    echo "$(ru_server_name ${server})" >> ${ru_ansible_inventory}
-  done
-  for group in $(ru_groups)
-  do
-    [ -n "$(ru_group_servers ${group})" ] || sed -i -e "/^\[${group}\]/d" ${ru_ansible_inventory}
-  done
-}
-
-### Set ansible environment
-
+[ -f lib/role_unit_frontend_${ru_frontend} ] && . lib/role_unit_frontend_${ru_frontend} || ru_usage "specified frontend '${ru_frontend}' does not exist"
 ru_dir_init
-export ru_ansible_id ru_ansible_dir ru_conf_file ru_ansible_inventory ru_ansible_playbook ru_ansible_roledir
+export ru_conf_file ru_id ru_dir ru_inventory ru_playbook ru_roledir
 [ ${ru_debug} -eq 1 -a -n "${ru_conf}" ] && . ${ru_conf_file}
 
 ### Test interface
@@ -265,7 +141,7 @@ if [ -n "${RU_ENV_TYPE}" ] ; then
    ru_warning "RU_ENV_TYPE is to be replaced by RU_BACKEND and will be remove in future versions."
    ru_backend=${ru_env_type}
 fi
-[ -z "$RU_ENV_IMAGE" ] && ru_usage "You did not specify an image on which to run tests."
+[ -z "$RU_ENV_IMAGE" ] && ru_info "RU_ENV_IMAGE not specified, running default image '${ru_env_image}'"
 
 ### Load virtualization specific library
 
