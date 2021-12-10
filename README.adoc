@@ -62,13 +62,13 @@ You have a list of functions you can call in your test file, described below.
 
 Initiates testing environment, i.e. creates containers or virtual machines depending on configuration.
 
-=== ru_ansible_init
+=== ru_frontend_init
 
 Initiates ansible inventory and playbook necessary to test your ansible role.
 
 Note that if your testing directory contains a requirements.yml file, ansible-galaxy will be used to fetch the roles in the roles directory. It is then up to you to use that role (rewrite playbook, include tasks in your role...).
 
-=== ru_run_ansible
+=== ru_run_frontend
 
 Actually run ansible-playbook on your testing environment.
 
@@ -84,15 +84,15 @@ Similar to ru_run but will retry cmd every second until timeout T is expired or 
 
 This comes handy for instance if you start a service on the server and you want to wait until the service is effectively operational.
 
-=== ru_ansible_fact [ -n N ] fact_name...
+=== ru_fact [ -n N ] fact_name...
 
 Returns the specified ansible fact for all of the servers or just on the one specified. N is the number of the server you want to get the fact from.
 
-=== ru_ansible_fact_filter [ -n N ] fact_filter
+=== ru_fact_filter [ -n N ] fact_filter
 
 Filters facts with the given expression and return the matching part of the facts in json format.
 
-For instance, running ```ru_ansible_fact_filter anisble_default_ipv4``` will return a similar parsable output :
+For instance, running ```ru_fact_filter anisble_default_ipv4``` will return a similar parsable output :
 
 ----
 192.168.13.53 | SUCCESS => {
@@ -163,9 +163,9 @@ Following variable, only available with docker backend:
 
 other role_unit variables may be used, but only to read values. Overwriting them may produce unexpected behaviours:
 
-* ru_ansible_inventory is an absolute path to the inventory that will be used by ru_run_ansible
-* ru_ansible_playbook is an absolute path to the playbook that will be used by ru_run_ansible
-* ru_ansible_dir is the temporary working directory for the tests. You will for instance find the group_vars in it.
+* ru_inventory is an absolute path to the inventory that will be used by ru_run_frontend
+* ru_playbook is an absolute path to the playbook that will be used by ru_run_frontend
+* ru_dir is the temporary working directory for the tests. You will for instance find the group_vars in it.
 
 For example of the usage you can made of these variables, have a look at the tests_tuto file in your tests directory.
 
