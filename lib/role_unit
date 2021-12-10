@@ -52,6 +52,18 @@ ru_usage() {
   exit 1
 }
 
+ru_uuid() {
+  if [ -f /proc/sys/kernel/random/uuid ] ; then
+    cat /proc/sys/kernel/random/uuid
+  elif which uuidgen >/dev/null 2>&1 ; then
+    uuidgen
+  elif which uuid >/dev/null 2>&1 ; then
+    uuid
+  else
+    date +%s
+  fi
+}
+
 ### Servers management functions
 
 ru_server() {
@@ -81,18 +93,6 @@ ru_server_num() {
 }
 
 ### Ansible management functions
-
-ru_uuid() {
-  if [ -f /proc/sys/kernel/random/uuid ] ; then
-    cat /proc/sys/kernel/random/uuid
-  elif which uuidgen >/dev/null 2>&1 ; then
-    uuidgen
-  elif which uuid >/dev/null 2>&1 ; then
-    uuid
-  else
-    date +%s
-  fi
-}
 
 ru_dir_init() {
   if [ ${ru_debug} -eq 0 -o -z "${ru_conf}" ] ; then
