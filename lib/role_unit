@@ -22,6 +22,7 @@
 ru_env_name=${RU_ENV_NAME:-role_unit}
 ru_env_image=${RU_ENV_IMAGE:-debian11}
 ru_env_type=${RU_ENV_TYPE:-docker}
+ru_backend=${RU_BACKEND:-docker}
 ru_count=${RU_COUNT:-1}
 ru_debug=${RU_DEBUG:-0}
 ru_first_debug=0
@@ -35,6 +36,15 @@ ru_tmp_dir=${TMPDIR:-/tmp}
 
 ru_info() {
   local txtcyn='\e[0;36m' # cyan text
+  local txtrst='\e[0m'    # text reset
+  printf "${txtcyn}"
+  echo -n "$@"
+  printf "${txtrst}"
+  echo
+}
+
+ru_warning() {
+  local txtcyn='\e[0;35m' # purple text
   local txtrst='\e[0m'    # text reset
   printf "${txtcyn}"
   echo -n "$@"
@@ -250,10 +260,15 @@ export ru_ansible_id ru_ansible_dir ru_conf_file ru_ansible_inventory ru_ansible
 
 ### Test interface
 
+if [ -n "${RU_ENV_TYPE}" ] ; then
+   ru_warning "[DEPRECATION WARNING] you specified backend using old RU_ENV_TYPE variable."
+   ru_warning "RU_ENV_TYPE is to be replaced by RU_BACKEND and will be remove in future versions."
+   ru_backend=${ru_env_type}
+fi
 [ -z "$RU_ENV_IMAGE" ] && ru_usage "You did not specify an image on which to run tests."
 
 ### Load virtualization specific library
 
-[ -f lib/role_unit_${ru_env_type} ] && . lib/role_unit_${ru_env_type} || ru_usage
+[ -f lib/role_unit_backend_${ru_backend} ] && . lib/role_unit_backend_${ru_backend} || ru_usage "specified backend '${ru_backend}' does not exist"
 
 # vim: syntax=sh

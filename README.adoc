@@ -46,7 +46,7 @@ applying ansible playbook
 Running test_that_succeeds... SUCCESS ✓
 Running test_that_succeeds_in_failure... SUCCESS ✓
 stopping container ru_role_unit_00
-/tmp/app RU_ENV_TYPE=nocloud RU_ENV_IMAGE=debian9 tests/bash_unit tests/tests_app
+/tmp/app RU_BACKEND=nocloud RU_ENV_IMAGE=debian9 tests/bash_unit tests/tests_app
 Running tests in tests/tests_app
 applying ansible playbook
 Running test_that_succeeds... SUCCESS ✓
@@ -151,7 +151,7 @@ There is only one mandatory environment variable, which is RU_ENV_IMAGE. It defi
 role_unit behaviour can be changed using environment variables:
 
 * RU_ENV_NAME defines the testing environment name. It is the name of the role you will test.
-* RU_ENV_TYPE defines the the backend you are using. Can be docker or nocloud, defaults to docker.
+* RU_BACKEND defines the the backend you are using. Can be docker, podman or nocloud, defaults to docker.
 * RU_ENV_DOCKER_REPO defines the docker repository to pull images from.
 * RU_ENV_IMAGE defines the system image used to create test environment.
 * RU_COUNT sets the number of containers or virtual machines
