@@ -19,19 +19,6 @@
 
 ### Ansible management functions
 
-ru_dir_init() {
-  if [ ${ru_debug} -eq 0 -o -z "${ru_conf}" ] ; then
-    ru_id=$(ru_uuid)
-    ru_dir=${ru_tmp_dir}/ansible/${ru_id}
-    mkdir -p ${ru_dir}
-    ru_conf_file=${ru_dir}/${ru_conf_file_name}
-    echo "ru_id=${ru_id}" >> ${ru_conf_file}
-    echo "ru_dir=${ru_dir}" >> ${ru_conf_file}
-  fi
-  ru_set_conf_file
-  . ${ru_conf_file}
-}
-
 ru_requirements() {
   if [ -f requirements.yml ] ; then
     ru_info fetching requirements
@@ -83,13 +70,6 @@ ru_run_frontend_command() {
   echo "ansible-playbook --verbose --diff -i ${ru_inventory} --connection=${ru_env_cnx} ${ru_playbook} ${ru_skip_tags}"
 }
 
-ru_run_frontend() {
-  if [ $# -gt 0 -a "$1" == "verbose" ] ; then
-    ru_info applying ansible playbook
-  fi
-  assert "$(ru_run_ansible_command)"
-}
-
 ru_run_frontend_module() {
   ansible --verbose --diff -i ${ru_inventory} --connection=${ru_env_cnx} all $@
 }
@@ -114,14 +94,6 @@ ru_fact_filter() {
   ru_server_names=$(echo -e "${ru_server_names}" | tr "\n" ",")
   local filter=$1
   ansible -i ${ru_inventory} --connection=${ru_env_cnx} ${ru_server_names} -m setup -a "filter=${filter}"
-}
-
-ru_set_conf_file() {
-  if [ ${ru_debug} -eq 1 -a -n "${ru_conf}" ] ; then
-    ru_conf_file=${ru_conf}
-  else
-    ru_conf_file=${ru_dir}/${ru_conf_file_name}
-  fi
 }
 
 ru_groups() {

@@ -1,0 +1,93 @@
+### Default environment
+
+#    (c) 2017-2016, n0vember <n0vember@half-9.net>
+#
+#    This file is part of role_unit.
+#
+#    role_unit is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    role_unit is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with role_unit.  If not, see <http://www.gnu.org/licenses/>.
+
+### All frontend must include those functions / variables
+
+
+
+### Frontend management functions
+
+# fetch automation requirements if any
+ru_requirements() {
+  true
+}
+
+# initiate the frontend environment
+ru_frontend_init() {
+  if [ ${ru_debug} -eq 0 -o -z "${ru_conf}" ] ; then
+    # Operations that are needed on first run, but not if debug is on
+    true
+  fi
+  . ${ru_conf_file}
+
+  # operations needed even in subsequent executions
+  ru_requirements
+}
+
+# outputs the automation command that is to be run
+ru_run_frontend_command() {
+  echo
+}
+
+# run a single automation module
+ru_run_frontend_module() {
+  true
+}
+
+# output facts gathered by automation for one or all servers
+ru_facts() {
+  local ru_server_names=$(ru_server_names)
+  [ "$1" == "-n" ] && ru_server_names=$(ru_server_name $2) && shift 2
+}
+
+# output a single fact for one or all machines
+ru_fact() {
+  local ru_servers
+  [ "$1" == "-n" ] && ru_servers="-n $2" && shift 2
+  local fact=$1
+}
+
+# output facts that match a filter, for one or all machines
+ru_fact_filter() {
+  local ru_servers
+  [ "$1" == "-n" ] && ru_server_names=$(ru_server_name $2) && shift 2
+  ru_server_names=$(echo -e "${ru_server_names}" | tr "\n" ",")
+  local filter=$1
+}
+
+# outputs the existing groups of servers in automation inventory
+ru_groups() {
+  true
+}
+
+# outputs the servers in a given inventory group
+ru_group_servers() {
+  local group_name=$1
+}
+
+# group under a given name a list of servers in inventory
+ru_group() {
+  local group_name=$1
+  shift
+  local servers=$@
+}
+
+export ru_id ru_dir ru_inventory ru_playbook ru_roledir
+
+# vim: syntax=sh

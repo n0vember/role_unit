@@ -129,6 +129,34 @@ ru_assert_with_timeout() {
 
 ### Set frontend environment
 
+ru_set_conf_file() {
+  if [ ${ru_debug} -eq 1 -a -n "${ru_conf}" ] ; then
+    ru_conf_file=${ru_conf}
+  else
+    ru_conf_file=${ru_dir}/${ru_conf_file_name}
+  fi
+}
+
+ru_dir_init() {
+  if [ ${ru_debug} -eq 0 -o -z "${ru_conf}" ] ; then
+    ru_id=$(ru_uuid)
+    ru_dir=${ru_tmp_dir}/${ru_frontend}/${ru_id}
+    mkdir -p ${ru_dir}
+    ru_conf_file=${ru_dir}/${ru_conf_file_name}
+    echo "ru_id=${ru_id}" >> ${ru_conf_file}
+    echo "ru_dir=${ru_dir}" >> ${ru_conf_file}
+  fi
+  ru_set_conf_file
+  . ${ru_conf_file}
+}
+
+ru_run_frontend() {
+  if [ $# -gt 0 -a "$1" == "verbose" ] ; then
+    ru_info applying automation
+  fi
+  assert "$(ru_run_frontend_command)"
+}
+
 [ -f lib/role_unit_frontend_${ru_frontend} ] && . lib/role_unit_frontend_${ru_frontend} || ru_usage "specified frontend '${ru_frontend}' does not exist"
 ru_dir_init
 export ru_conf_file ru_id ru_dir ru_inventory ru_playbook ru_roledir
