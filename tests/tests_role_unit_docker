@@ -4,8 +4,8 @@
 . lib/role_unit
 
 test_i_am_in_a_docker_container() {
-  assert_equals "guest" "$(ru_ansible_fact ansible_virtualization_role)"
-  assert_equals "docker" "$(ru_ansible_fact ansible_virtualization_type)"
+  assert_equals "guest" "$(ru_fact ansible_virtualization_role)"
+  assert_equals "docker" "$(ru_fact ansible_virtualization_type)"
 }
 
 test_detect_ubuntu_system() {

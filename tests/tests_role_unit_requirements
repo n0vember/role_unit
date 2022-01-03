@@ -9,10 +9,10 @@ DEP_URL=https://gitlab.com/role_unit/${DEP_NAME}.git
 . lib/role_unit
 
 test_requirements_are_fetched_if_requirements_file_exists() {
-  assert_fail "test -d ${ru_ansible_dir}/roles/${DEP_NAME}"
+  assert_fail "test -d ${ru_dir}/roles/${DEP_NAME}"
   ru_init >/dev/null
   trap - EXIT # Trick to issue silently the destroy
-  assert "test -d ${ru_ansible_dir}/roles/${DEP_NAME}"
+  assert "test -d ${ru_dir}/roles/${DEP_NAME}"
   ru_destroy >/dev/null
 }
 

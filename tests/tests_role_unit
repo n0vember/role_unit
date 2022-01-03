@@ -9,25 +9,25 @@ test_i_have_a_system_to_connect_to() {
 }
 
 test_i_can_make_an_ansible_run_over_my_container() {
-  ru_run_ansible
+  ru_run_frontend
 }
 
 test_environment_is_docker_container_from_desired_image() {
   local distribution=$(echo $RU_ENV_IMAGE | sed -r 's/^([^0-9]+)(.*)/\1/')
   local version=$(echo $RU_ENV_IMAGE | sed -r 's/^([^0-9]+)(.*)/\2/')
   if [ "${distribution}" == "archlinux" ] ; then version="NA" ; fi
-  assert_equals "${distribution}" "$(ru_ansible_fact ansible_distribution | tr '[A-Z]' '[a-z]')" "distribution is not expected one"
-  assert_equals "${version}" "$(ru_ansible_fact ansible_distribution_major_version)" "version is not expected one"
-  assert_equals "docker" "$(ru_ansible_fact ansible_virtualization_type)"
+  assert_equals "${distribution}" "$(ru_fact ansible_distribution | tr '[A-Z]' '[a-z]')" "distribution is not expected one"
+  assert_equals "${version}" "$(ru_fact ansible_distribution_major_version)" "version is not expected one"
+  assert_equals "docker" "$(ru_fact ansible_virtualization_type)"
 }
 
 test_group_vars_is_seen() {
-  assert "ru_run_ansible_module -m debug -a var=this_is_a_testing_variable | grep '.this_is_a_testing_variable.: .the desired value.'"
-  assert "ru_run_ansible_module -m debug -a var=there_is_no_such_thing_as_this_variable | grep '.there_is_no_such_thing_as_this_variable.: .VARIABLE IS NOT DEFINED!.'"
+  assert "ru_run_frontend_module -m debug -a var=this_is_a_testing_variable | grep '.this_is_a_testing_variable.: .the desired value.'"
+  assert "ru_run_frontend_module -m debug -a var=there_is_no_such_thing_as_this_variable | grep '.there_is_no_such_thing_as_this_variable.: .VARIABLE IS NOT DEFINED!.'"
 }
 
 test_i_can_access_systemd_if_it_is_my_init_system() {
-  init_system=$(ru_ansible_fact ansible_service_mgr)
+  init_system=$(ru_fact ansible_service_mgr)
   [ "${init_system}" == "systemd" ] && assert "ru_run systemctl status"
   assert "ru_run echo"
 }
@@ -47,7 +47,7 @@ test_ru_assert_with_timeout_succeeds_if_time_is_under_limit() {
 
 setup_suite() {
   ru_init
-  ru_run_ansible verbose
+  ru_run_frontend verbose
 }
 
 setup() {

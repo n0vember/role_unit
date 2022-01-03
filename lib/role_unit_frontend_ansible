@@ -129,14 +129,14 @@ export ru_id ru_dir ru_inventory ru_playbook ru_roledir
 
 ### legacy compatibility (will be removed in future versions)
 export ru_ansible_id ru_ansible_dir ru_ansible_inventory ru_ansible_playbook ru_ansible_roledir
-ru_ansible_requirements() { ru_requirements; }
-ru_ansible_init() { ru_frontend_init; }
-ru_run_ansible_command() { ru_run_frontend_command; }
-ru_run_ansible() { ru_run_frontend "$@"; }
-ru_run_ansible_module() { ru_run_frontend_module "$@"; }
-ru_ansible_facts() { ru_facts; }
-ru_ansible_fact() { ru_fact "$@"; }
-ru_ansible_fact_filter() { ru_fact_filter "$@"; }
+ru_ansible_requirements() { ru_warning "$0 function is deprecated, use 'ru_requirements' instead"; ru_requirements; }
+ru_ansible_init() { ru_warning "$0 function is deprecated, use 'ru_frontend_init' instead"; ru_frontend_init; }
+ru_run_ansible_command() { ru_warning "$0 function is deprecated, use 'ru_run_frontend_command' instead"; ru_run_frontend_command; }
+ru_run_ansible() { ru_warning "$0 function is deprecated, use 'ru_run_frontend' instead"; ru_run_frontend "$@"; }
+ru_run_ansible_module() { ru_warning "$0 function is deprecated, use 'ru_run_frontend_module' instead"; ru_run_frontend_module "$@"; }
+ru_ansible_facts() { ru_warning "$0 function is deprecated, use 'ru_facts' instead"; ru_facts; }
+ru_ansible_fact() { ru_warning "$0 function is deprecated, use 'ru_fact' instead"; ru_fact "$@"; }
+ru_ansible_fact_filter() { ru_warning "$0 function is deprecated, use 'ru_fact_filter' instead"; ru_fact_filter "$@"; }
 ###
 
 # vim: syntax=sh

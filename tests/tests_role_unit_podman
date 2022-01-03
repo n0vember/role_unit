@@ -5,8 +5,8 @@ RU_BACKEND=podman
 . lib/role_unit
 
 test_i_am_in_a_podman_container() {
-  assert_equals "guest" "$(ru_ansible_fact ansible_virtualization_role)"
-  assert "echo $(ru_ansible_fact ansible_virtualization_type) | grep -e '^container' -e '^docker'"
+  assert_equals "guest" "$(ru_fact ansible_virtualization_role)"
+  assert "echo $(ru_fact ansible_virtualization_type) | grep -e '^container' -e '^docker'"
 }
 
 test_process_can_be_launched_in_background() {

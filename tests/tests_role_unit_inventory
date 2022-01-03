@@ -36,11 +36,11 @@ EOF
 )
   assert_equals "${RU_ENV_NAME}" "$(ru_groups)"
   assert_equals "${expected_initial_group}" "$(ru_group_servers ${RU_ENV_NAME})"
-  assert_equals "${expected_initial_inventory}" "$(cat ${ru_ansible_inventory})"
+  assert_equals "${expected_initial_inventory}" "$(cat ${ru_inventory})"
   ru_group server 0
   ru_group clients 1 2
-  assert_fails "grep '\[${RU_ENV_NAME}\]' ${ru_ansible_inventory}"
-  assert_equals "${expected_modified_inventory}" "$(cat ${ru_ansible_inventory})"
+  assert_fails "grep '\[${RU_ENV_NAME}\]' ${ru_inventory}"
+  assert_equals "${expected_modified_inventory}" "$(cat ${ru_inventory})"
 }
 
 setup_suite() {
