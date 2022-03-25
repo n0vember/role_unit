@@ -16,7 +16,8 @@ RU_ENV_IMAGE=debian9
 
 RU_ENV_NAME=tuto
 # this is pure cosmetics. From this will depend the internal naming of the testing infrastructure
-# and how the role is called during the tests.
+# and how the role is called during the tests. This may be important if you want to set your own
+# playbook and want to reference your role by its real name.
 
 RU_COUNT=2
 # This will set how many machines/containers you have in your testing environment. Default is 1.
@@ -64,8 +65,8 @@ test_servers_and_names() {
 }
 
 test_ansible() {
-  assert_equals "docker" "$(ru_ansible_fact -n 0 ansible_virtualization_type)" \
-    "ru_ansible_fact gives you a fact on one or all machines"
+  assert_equals "docker" "$(ru_frontend_fact -n 0 ansible_virtualization_type)" \
+    "ru_frontend_fact gives you a fact on one or all machines"
 }
 
 # Setup suite initiates the environment
@@ -79,7 +80,9 @@ setup_suite() {
   cat > ${ru_ansible_dir}/group_vars/all.yml <<EOF
 a_variable: "a value"
 EOF
-  ru_run_ansible verbose # And this launches ansible
+  ru_run_frontend verbose # And this launches automation
 }
+
+# This is a quick start. You can use podman instead of docker, use qemu, or develop your own backend or frontend.
 
 # vim: syntax=sh
