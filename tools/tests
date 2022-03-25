@@ -6,7 +6,7 @@
 # RU_ENV_IMAGE=centos7
 # Or as environment variable in the shell launching the tests
 
-# FOR MORE DOCUMENTATION, READ THE tests_tuto FILE IN THE tests DIRECTORY
+# FOR MORE DOCUMENTATION, READ THE tests_tuto FILE IN THE tools DIRECTORY OF ROLE_UNIT GIT REPOSITORY
 
 . lib/role_unit
 
