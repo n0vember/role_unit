@@ -24,7 +24,7 @@ test_idempotency() {
 
 setup_suite() {
   ru_init
-  ru_run_ansible verbose
+  ru_run_frontend verbose
 }
 
 # vim: syntax=sh
