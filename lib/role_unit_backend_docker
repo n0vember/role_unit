@@ -30,6 +30,9 @@ declare -p ru_servers_names >/dev/null 2>&1 || declare -A ru_servers_names
 ru_host_needs_privileged() {
   local ru_issue_file="${RU_ISSUE_FILE:-/etc/issue}"
   local ret_code=1
+  if [ $(uname -s) == "Darwin" ] ; then
+    ret_code=0
+  fi
   if [ -f "${ru_issue_file}" ] ; then
     if grep ^Ubuntu ${ru_issue_file} >/dev/null ; then
       ret_code=0
