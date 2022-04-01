@@ -71,7 +71,7 @@ explain() {
 $1 role created. Go in $1 directory and...
   Start testing now with the following command:
   RU_ENV_IMAGE=debian9 tests/bash_unit tests/tests_$1
-  Look for help in tools/tests_tuto file and run it:
+  Look for help in tools/tests_tuto file in the repository and run it:
   RU_ENV_IMAGE=centos7 tests/bash_unit tools/tests_tuto
   Change the image you use to match your needs and code your role.
 
