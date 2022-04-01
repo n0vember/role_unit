@@ -160,6 +160,7 @@ role_unit behaviour can be changed using environment variables:
 * RU_ENV_IMAGE defines the system image used to create test environment.
 * RU_COUNT sets the number of containers or virtual machines
 * RU_DEBUG when set to 1, will make role_unit not to stop containers after the run, so you can enter them to check things.
+* RU_NOTMPFS defines wheter /tmp and /run are mounted as tmpfs. As a default they are, but there may be cases where, for instance, you want /tmp not to be mounted /noexec.
 
 Following variable, only available with docker backend:
 

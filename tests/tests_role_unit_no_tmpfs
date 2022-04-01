@@ -1,0 +1,21 @@
+#!/usr/bin/env bash_unit
+
+[ -z "${RU_ENV_IMAGE}" ] && export RU_ENV_IMAGE=debian11
+RU_NOTMPFS=1
+
+. lib/role_unit
+
+test_i_can_execute_on_tmp() {
+  local content='#!/usr/bin/env bash
+echo bar
+'
+  echo -e "${content}" | ru_run tee /tmp/foo > /dev/null
+  ru_run chmod +x /tmp/foo
+  assert_equals "bar" "$(ru_run /tmp/foo)"
+}
+
+setup_suite() {
+  ru_init
+}
+
+# vim: syntax=sh
