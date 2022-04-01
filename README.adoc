@@ -12,7 +12,7 @@ Role_unit is based on https://github.com/pgrange/bash_unit[bash_unit], a bash un
 
 None of the following are really required to use role_unit. It only depends on your use-case.
 
-* docker to tests using containers
+* docker or podman to test using containers
 * nocloud if you want to test using nocloud virtual machines
 * ansible to test ansible roles
 
