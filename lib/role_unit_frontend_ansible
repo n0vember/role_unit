@@ -50,7 +50,7 @@ ru_frontend_init() {
   ru_requirements
 
   [ ! -f ${ru_playbook} ] && cat > ${ru_playbook} << EOF
-- hosts: ${ru_env_name}
+- hosts: all
   roles:
     - ${ru_env_name}
 EOF
