@@ -17,7 +17,7 @@
 
 ru_env_cnx="docker"
 ru_env_docker_repo="registry.gitlab.com/role_unit/role_unit_containers"
-ru_notmpfs=${RU_NOTMPFS}
+ru_notmpfs=${RU_NOTMPFS:-0}
 
 ### User environment
 
