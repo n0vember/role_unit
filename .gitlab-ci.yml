@@ -59,6 +59,15 @@ podman:
     - RU_ENV_IMAGE=debian11 tests/bash_unit tests/tests_role_unit_podman
   stage: library
 
+podman-compose:
+  script:
+    - echo "https://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories
+    - apk update
+    - apk add podman
+    - pip3 install podman-compose
+    - RU_ENV_IMAGE=debian11 tests/bash_unit tests/tests_role_unit_podman-compose
+  stage: library
+
 multiplicity:
   script:
     - RU_ENV_IMAGE=debian11 tests/bash_unit tests/tests_role_unit_double

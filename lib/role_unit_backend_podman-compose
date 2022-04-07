@@ -1,0 +1,238 @@
+#    (c) 2016-2022, n0vember <n0vember@half-9.net>
+#
+#    This file is part of role_unit.
+#
+#    role_unit is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    role_unit is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with role_unit.  If not, see <http://www.gnu.org/licenses/>.
+
+ru_env_cnx="podman"
+ru_env_podman_repo="registry.gitlab.com/role_unit/role_unit_containers"
+ru_notmpfs=${RU_NOTMPFS:-0}
+export ANSIBLE_PIPELINING="False"
+
+### User environment
+
+[ -n "$RU_ENV_DOCKER_REPO" ] && ru_env_podman_repo="$RU_ENV_DOCKER_REPO"
+ru_fixed_names=${RU_FIXED_NAMES:-0}
+
+### Global functions
+
+declare -p ru_servers_names >/dev/null 2>&1 || declare -A ru_servers_names
+
+ru_host_needs_privileged() {
+  local ru_issue_file="${RU_ISSUE_FILE:-/etc/issue}"
+  local ret_code=1
+  if [ $(uname -s) == "Darwin" ] ; then
+    ret_code=0
+  fi
+  if [ -f "${ru_issue_file}" ] ; then
+    if grep ^Ubuntu ${ru_issue_file} >/dev/null ; then
+      ret_code=0
+    fi
+    if grep ^Debian ${ru_issue_file} >/dev/null ; then
+      ret_code=0
+    fi
+  fi
+  return ${ret_code}
+}
+
+ru_wipe_environment() {
+  local ru_conf_for_env_to_wipe="$1"
+  local ru_id_to_remove ru_compose_to_remove
+  ru_id_to_remove=$(grep "^ru_id=" ${ru_conf_for_env_to_wipe} | cut -d = -f 2)
+  ru_compose_to_remove=$(grep "^ru_compose_file=" ${ru_conf_for_env_to_wipe} | cut -d = -f 2)
+  podman-compose -f ${ru_compose_to_remove} down &> /dev/null
+  podman network rm ${ru_id_to_remove} &> /dev/null
+}
+
+ru_destroy() {
+  ru_info stopping containers and removing_network
+  ru_wipe_environment ${ru_conf_file}
+}
+
+ru_pull() {
+  local ru_image_name=$1
+  local ru_image_repo=$(echo ${ru_image_name} | cut -d ":" -f 1)
+  local ru_image_tag=$(echo ${ru_image_name} | cut -d ":" -f 2)
+
+  ru_info pulling podman image
+  podman pull ${ru_image_name} >/dev/null 2>&1
+
+  ru_image_exists=$(podman images | grep "^${ru_image_repo} *${ru_image_tag} " | wc -l)
+  [ ${ru_image_exists} -eq 0 ] && ru_usage "unable to pull image (${ru_image_name})"
+}
+
+ru_debug_info() {
+  ru_info to re-run the tests on the same environment, re-run the same command in debug mode:
+  ru_info "    RU_DEBUG=1 $0 ${test_file}"
+  ru_info to connect to containers, run the following:
+  for ru_server in $(ru_server_nums)
+  do
+    ru_info "    podman exec -ti ${ru_servers_names[${ru_server}]} bash # $(ru_server ${ru_server})"
+  done
+  ru_info at the end, you will have to drop those containers manually and unset RU_DEBUG:
+  ru_info "    podman-compose -f ${ru_dir}/podman-compose.yml down"
+  ru_info "    podman network rm ${ru_id}"
+  ru_info "or just run the tests without debug mode:"
+  ru_info "    $0 ${test_file}"
+}
+
+ru_existing_debug_envs() {
+  local ru_test_file
+  ru_test_file=$(basename ${BASH_ARGV[0]})
+  podman ps -q | \
+    xargs podman inspect 2>/dev/null| \
+    jq -r '
+      .|
+      map(select(.Config.Labels.ru_test_file=="'${ru_test_file}'"))|
+      map(select(.Config.Labels.ru_debug=="1"))|
+      map(select(.Config.Labels.ru_backend=="'${ru_backend}'"))|
+      .[].Config.Labels.ru_conf_file' | \
+    sort -u
+}
+
+ru_podman_compose_requirements() {
+  jq --version &>/dev/null || ru_usage jq must be available to use this backend
+  podman-compose -v &>/dev/null || ru_usage podman-compose must be available to use this backend
+}
+
+ru_init() {
+  ru_podman_compose_requirements
+  local ru_server ru_server_name ru_test_file
+  local ru_debug_env ru_existing_debugs ru_id_to_remove ru_compose_to_remove
+  ru_test_file=$(basename ${BASH_ARGV[0]})
+  ru_info searching for running containers in debug mode for ${ru_test_file} test file
+  ru_existing_debugs=$(ru_existing_debug_envs | wc -l)
+  if [ ${ru_existing_debugs} -gt 0 ] ; then
+    if [ ${ru_debug} -eq 1 ] ; then
+      if [ ${ru_existing_debugs} -gt 1 ] ; then
+        ru_warning found more than one debug environment
+        ru_warning using the first one but you might want to look into it
+      fi
+      ru_info found existing debug environment and reusing it
+      ru_conf=$(ru_existing_debug_envs | head -1)
+      ru_first_debug=0
+    else
+      ru_info wiping debug environment as debug mode_is deactivated
+      for ru_debug_env in $(ru_existing_debug_envs)
+      do
+        ru_wipe_environment ${ru_debug_env}
+      done
+    fi
+  else
+    ru_info no existing debug environment found
+  fi
+  ru_dir_init
+  if [ ${ru_debug} -eq 0 -o -z "${ru_conf}" ] ; then
+    echo "RU_ENV_IMAGE=${ru_env_image}" >> ${ru_conf_file}
+    ru_info generating compose file
+    cat >${ru_dir}/podman-compose.yml <<EOF
+---
+
+version: '3.3'
+
+networks:
+  ${ru_id}:
+    driver: bridge
+    name: ${ru_id}
+
+services:
+EOF
+    for ru_server in $(ru_server_nums)
+    do
+      [ ${ru_fixed_names} -eq 0 ] && ru_server_name=$(ru_uuid) || ru_server_name=${ru_env_name}_${ru_server}
+      cat >> ${ru_dir}/podman-compose.yml <<EOF
+  ${ru_server_name}:
+    container_name: ${ru_server_name}
+    image: ${ru_env_podman_repo}:${ru_env_image}
+    restart: unless-stopped
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup
+EOF
+      if [ ${ru_notmpfs} -eq 0 ] ; then
+        cat >> ${ru_dir}/podman-compose.yml <<EOF
+    tmpfs:
+      - /tmp
+      - /run
+EOF
+      fi
+      if ru_host_needs_privileged ; then
+        cat >> ${ru_dir}/podman-compose.yml <<EOF
+    privileged: true
+EOF
+      else
+        cat >> ${ru_dir}/podman-compose.yml <<EOF
+    cap_add:
+      - SYS_ADMIN
+EOF
+      fi
+      cat >> ${ru_dir}/podman-compose.yml <<EOF
+    cgroup_parent: role_unit.slice
+    labels:
+      role_unit: true
+      ru_debug: ${ru_debug}
+      ru_test_file: ${ru_test_file}
+      ru_conf_file: "${ru_conf_file}"
+      ru_backend: ${ru_backend}
+      ru_compose_file: "${ru_dir}/podman-compose.yml"
+EOF
+      echo "ru_servers_names[${ru_server}]=${ru_server_name}" >> ${ru_conf_file}
+    done
+    echo "ru_compose_file=${ru_dir}/podman-compose.yml" >> ${ru_conf_file}
+    ru_pull ${ru_env_podman_repo}:${ru_env_image}
+    ru_info starting containers
+    podman-compose \
+      -f ${ru_dir}/podman-compose.yml \
+      -p ${ru_id} \
+      up -d &> /dev/null
+  fi
+  . ${ru_conf_file}
+  if [ ${ru_debug} -ne 1 ] ; then
+    trap "ru_destroy" EXIT
+  fi
+  ru_frontend_init
+  if [ ${ru_debug} -eq 1 ] ; then
+    ru_info Debug mode activated. Environment will not be dropped after the tests.
+    ru_info Information will be displayed after the tests to handle the debug environemnt.
+    trap "ru_debug_info" EXIT
+  fi  
+  echo "[${ru_env_name}]" > ${ru_inventory}
+  for ru_server in $(ru_server_nums) ; do
+    echo ${ru_servers_names[${ru_server}]}
+  done >> ${ru_inventory}
+}
+
+ru_run() {
+  local ru_servers=$(ru_server_nums)
+  local ru_background_option
+  [ "$1" == "-d" ] && ru_background_option="-d" && shift
+  [ "$1" == "-n" ] && ru_servers=$(ru_server_num $2) && shift 2
+  for ru_server in ${ru_servers}
+  do
+    local ru_server_name=${ru_servers_names[${ru_server}]}
+    podman exec ${ru_background_option} -i ${ru_server_name} "$@"
+  done
+}
+
+ru_server_name() {
+  local ru_server_num=$(ru_server_num $1)
+  echo ${ru_servers_names[${ru_server_num}]}
+}
+
+ru_server_names() {
+  for ru_server in $(ru_server_nums) ; do
+    echo ${ru_servers_names[${ru_server}]}
+  done
+}
+
+# vim: syntax=sh
