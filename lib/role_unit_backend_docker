@@ -45,14 +45,18 @@ ru_host_needs_privileged() {
   return ${ret_code}
 }
 
-ru_destroy() {
-  local ru_server
-  for ru_server in $(ru_server_nums)
+ru_wipe_environment() {
+  local ru_conf_for_env_to_wipe="$1"
+  local ru_server_to_remove
+  for ru_server_to_remove in $(grep "^ru_servers_names\[[0-9]*\]=" ${ru_conf_for_env_to_wipe} | cut -d = -f 2)
   do
-    local ru_server_name=${ru_servers_names[${ru_server}]}
-    ru_info stopping container $(ru_server ${ru_server})
-    docker rm -f ${ru_server_name} >/dev/null 2>&1
+    docker rm -f ${ru_server_to_remove} &> /dev/null
   done
+}
+
+ru_destroy() {
+  ru_info stopping containers
+  ru_wipe_environment ${ru_conf_file}
 }
 
 ru_pull() {
@@ -68,29 +72,62 @@ ru_pull() {
 }
 
 ru_debug_info() {
-  if [ ${ru_first_debug} -eq 1 ] ; then
-    ru_info "this is the first run in this debug environment, set the variables before re-run:"
-    ru_info "    export RU_DEBUG=1"
-    ru_info "    export RU_CONF=${ru_conf_file}"
-  fi
-  ru_info to re-run the tests on the same environment, re-run the same command:
-  ru_info "    $0 ${test_file}"
+  ru_info to re-run the tests on the same environment, re-run the same command in debug_mode:
+  ru_info "    RU_DEBUG=1 $0 ${test_file}"
   ru_info to connect to containers, run the following:
   for ru_server in $(ru_server_nums)
   do
     ru_info "    docker exec -ti ${ru_servers_names[${ru_server}]} bash # $(ru_server ${ru_server})"
   done
-  ru_info at the end, you will have to drop those containers manually and unset vars:
+  ru_info at the end, you will have to drop those containers manually and unset RU_DEBUG:
   ru_info "    $(ru_server_names | xargs echo docker stop)"
-  ru_info "    unset RU_DEBUG RU_CONF"
+  ru_info "or just run the tests without debug mode:"
+  ru_info "    $0 ${test_file}"
+}
+
+ru_existing_debug_envs() {
+  local ru_test_file
+  ru_test_file=$(basename ${BASH_ARGV[0]})
+  docker ps -q | \
+    xargs docker inspect 2>/dev/null| \
+    jq -r '
+      .|
+      map(select(.Config.Labels.ru_test_file=="'${ru_test_file}'"))|
+      map(select(.Config.Labels.ru_debug=="1"))|
+      map(select(.Config.Labels.ru_backend=="'${ru_backend}'"))|
+      .[].Config.Labels.ru_conf_file' | \
+    sort -u
 }
 
 ru_init() {
-  local ru_server ru_server_name
+  local ru_server ru_server_name ru_test_file
+  local ru_debug_env ru_existing_debugs
   local ru_capacity="--cap-add=SYS_ADMIN"
+  ru_test_file=$(basename ${BASH_ARGV[0]})
   ru_host_needs_privileged && ru_capacity="--privileged"
   local ru_tmpfs_option
   if [ ${ru_notmpfs} -eq 0 ] ; then ru_tmpfs_option="--tmpfs /tmp --tmpfs /run" ; fi
+  ru_info searching for running containers in debug mode for ${ru_test_file} test file
+  ru_existing_debugs=$(ru_existing_debug_envs | wc -l)
+  if [ ${ru_existing_debugs} -gt 0 ] ; then
+    if [ ${ru_debug} -eq 1 ] ; then
+      if [ ${ru_existing_debugs} -gt 1 ] ; then
+        ru_warning found more than one debug environment
+        ru_warning using the first one but you might want to look into it
+      fi
+      ru_info found existing debug environment and reusing it
+      ru_conf=$(ru_existing_debug_envs | head -1)
+      ru_first_debug=0
+    else
+      ru_info wiping debug environment as debug mode_is deactivated
+      for ru_debug_env in $(ru_existing_debug_envs)
+      do
+        ru_wipe_environment ${ru_debug_env}
+      done
+    fi
+  else
+    ru_info no existing debug environment found
+  fi
   ru_dir_init
   if [ ${ru_debug} -eq 0 -o -z "${ru_conf}" ] ; then
     echo "RU_ENV_IMAGE=${ru_env_image}" >> ${ru_conf_file}
@@ -109,6 +146,11 @@ ru_init() {
         -v /sys/fs/cgroup:/sys/fs/cgroup \
         --name=${ru_server_name} \
         --hostname=${ru_server_name} \
+        --label "role_unit=true" \
+        --label "ru_debug=${ru_debug}" \
+        --label "ru_test_file=${ru_test_file}" \
+        --label "ru_conf_file="${ru_conf_file}"" \
+        --label "ru_backend=${ru_backend}" \
         ${ru_env_docker_repo}:${ru_env_image} \
         >/dev/null 2>&1
       echo "ru_servers_names[${ru_server}]=${ru_server_name}" >> ${ru_conf_file}
