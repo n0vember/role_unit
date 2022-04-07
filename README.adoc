@@ -10,9 +10,11 @@ Role_unit is based on https://github.com/pgrange/bash_unit[bash_unit], a bash un
 
 == prerequisites
 
+After a long time using only bash and standard Unix commands (like sed, grep, tr...), jq has been added as a pre-requisite. It is not a strong constraint and is used to manipulate docker and podman json outputs.
+
 None of the following are really required to use role_unit. It only depends on your use-case.
 
-* docker or podman to test using containers
+* docker, podman or podman-compose installed and configured to test using containers
 * nocloud if you want to test using nocloud virtual machines
 * ansible to test ansible roles
 
@@ -21,6 +23,8 @@ None of the following are really required to use role_unit. It only depends on y
 There is no installation process. Valid way to use role_unit is to clone repository somewhere and link role_init to a place where it will be in your PATH environment variable.
 
 == usage
+
+=== standard use
 
 To create a new ansible role tested with role_unit, place yourself in the directory where you want the role and run role_init:
 
@@ -60,37 +64,61 @@ The tests directory is a standard ansible structure : if you place a group_vars 
 
 You have a list of functions you can call in your test file, described below.
 
-=== ru_init
+=== debug mode
+
+In the standard usage, role_unit executes the following sequence:
+
+- containers creation
+- application of automation to the container(s)
+- execution of tests through bash_unit
+- containers destruction
+
+if you set RU_DEBUG environment variable to 1, the sequence will be:
+
+- search for an existing debug environment
+- containers creation if none found
+- application of automation to the container(s)
+- execution of tests through bash_unit
+
+containers are then not removed and instructions are given to enter the container to do actual debugging and dispose of the environment when debugging is done.
+
+if tests are run without debug, any existing debug environment matching test file and backend will be destroyed.
+
+=== available functions
+
+here is a list of functions available in the test file as a complement of bash_unit to manipulate the test environment. For some examples see the tests_tuto file.
+
+==== ru_init
 
 Initiates testing environment, i.e. creates containers or virtual machines depending on configuration.
 
-=== ru_frontend_init
+==== ru_frontend_init
 
 Initiates ansible inventory and playbook necessary to test your ansible role.
 
 Note that if your testing directory contains a requirements.yml file, ansible-galaxy will be used to fetch the roles in the roles directory. It is then up to you to use that role (rewrite playbook, include tasks in your role...).
 
-=== ru_run_frontend
+==== ru_run_frontend
 
 Actually run ansible-playbook on your testing environment.
 
-=== ru_run [ -d ] [ -n N ] cmd ...
+==== ru_run [ -d ] [ -n N ] cmd ...
 
 Runs the specified command on all of the servers or just on the one specified. N is the number of the server you want to run the command on.
 
 If you specify -d option, this will launch command in a detached mode. There may be evolution in the future about that but for now those options must be sepcified in this order only.
 
-=== ru_assert_with_timeout -t T [ -n N ] cmd
+==== ru_assert_with_timeout -t T [ -n N ] cmd
 
 Similar to ru_run but will retry cmd every second until timeout T is expired or command returns a 0 exit code (whatever comes first). Return code will be the exit code of the last run of the command.
 
 This comes handy for instance if you start a service on the server and you want to wait until the service is effectively operational.
 
-=== ru_fact [ -n N ] fact_name...
+==== ru_fact [ -n N ] fact_name...
 
 Returns the specified ansible fact for all of the servers or just on the one specified. N is the number of the server you want to get the fact from.
 
-=== ru_fact_filter [ -n N ] fact_filter
+==== ru_fact_filter [ -n N ] fact_filter
 
 Filters facts with the given expression and return the matching part of the facts in json format.
 
@@ -116,7 +144,7 @@ For instance, running ```ru_fact_filter anisble_default_ipv4``` will return a si
 }
 ----
 
-=== ru_group group_name N...
+==== ru_group group_name N...
 
 Calling ru_group will rearange inventory by creating a new inventory group containing servers which indexes are past as argument.
 
@@ -125,15 +153,15 @@ This function comes with two others:
 - ru_groups will list all existing groups in inventory
 - ru_group_servers will list all servers in a group passed as argument
 
-=== ru_server and ru_servers
+==== ru_server and ru_servers
 
 Those functions return either a single server name from index, or the list.
 
-=== ru_server_nums
+==== ru_server_nums
 
 Returns the list of indexes to address the server through functions like ru_server or ru_run.
 
-=== ru_uuid
+==== ru_uuid
 
 Returns an identifier, using what is avilable on the host (uuidgen, uuid...) and if no other option is available, fallbacks to using the date.
 
