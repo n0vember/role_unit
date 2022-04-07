@@ -109,7 +109,7 @@ ru_podman_compose_requirements() {
 ru_init() {
   ru_podman_compose_requirements
   local ru_server ru_server_name ru_test_file
-  local ru_debug_env ru_existing_debugs ru_id_to_remove ru_compose_to_remove
+  local ru_debug_env ru_existing_debugs
   ru_test_file=$(basename ${BASH_ARGV[0]})
   ru_info searching for running containers in debug mode for ${ru_test_file} test file
   ru_existing_debugs=$(ru_existing_debug_envs | wc -l)
@@ -205,7 +205,7 @@ EOF
     ru_info Debug mode activated. Environment will not be dropped after the tests.
     ru_info Information will be displayed after the tests to handle the debug environemnt.
     trap "ru_debug_info" EXIT
-  fi  
+  fi
   echo "[${ru_env_name}]" > ${ru_inventory}
   for ru_server in $(ru_server_nums) ; do
     echo ${ru_servers_names[${ru_server}]}
