@@ -108,7 +108,7 @@ Runs the specified command on all of the servers or just on the one specified. N
 
 If you specify -d option, this will launch command in a detached mode. There may be evolution in the future about that but for now those options must be sepcified in this order only.
 
-==== ru_assert_with_timeout -t T [ -n N ] cmd
+==== ru_run_with_timeout -t T [ -n N ] cmd
 
 Similar to ru_run but will retry cmd every second until timeout T is expired or command returns a 0 exit code (whatever comes first). Return code will be the exit code of the last run of the command.
 

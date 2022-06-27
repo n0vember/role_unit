@@ -105,7 +105,7 @@ ru_server_num() {
 
 ### test management functions
 
-ru_assert_with_timeout() {
+ru_run_with_timeout() {
   local flag flagged=1 timeout server ret_code=1
   while [ $flagged -gt 0 ]
   do
@@ -125,6 +125,11 @@ ru_assert_with_timeout() {
     sleep 1
   done
   return ${ret_code}
+}
+
+ru_assert_with_timeout() {
+  ru_info "ru_assert_with_timeout is deprecated, use ru_run_with_timeout instead"
+  ru_run_with_timeout "$@"
 }
 
 ### Set frontend environment

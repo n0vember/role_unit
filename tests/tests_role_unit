@@ -35,14 +35,14 @@ test_i_can_access_systemd_if_it_is_my_init_system() {
 test_ru_assert_with_timeout_fails_if_time_exceedeed() {
   local test_file=/tmp/foo/$$
   sleep 2 && ru_run touch ${test_file} &
-  assert_fails "ru_assert_with_timeout -t 1 test -f ${test_file}"
+  assert_fails "ru_run_with_timeout -t 1 test -f ${test_file}"
 }
 
 test_ru_assert_with_timeout_succeeds_if_time_is_under_limit() {
   local test_file=/tmp/foo/$$
   sleep 1 && ru_run touch ${test_file} &
-  assert "ru_assert_with_timeout -t 2 test -f ${test_file}"
-  assert "ru_assert_with_timeout -t 2 -n 0 test -f ${test_file}"
+  assert "ru_run_with_timeout -t 2 test -f ${test_file}"
+  assert "ru_run_with_timeout -t 2 -n 0 test -f ${test_file}"
 }
 
 setup_suite() {
