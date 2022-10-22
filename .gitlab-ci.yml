@@ -35,8 +35,8 @@ debian10:
 centos8:
   extends: .distribution_testing
 
-centos7:
-  extends: .distribution_testing
+#centos7:
+#  extends: .distribution_testing
 
 archlinux:
   extends: .distribution_testing
