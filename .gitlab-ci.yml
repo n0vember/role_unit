@@ -8,6 +8,9 @@ variables:
 services:
 - docker:dind
 
+tags:
+  - role_unit
+
 stages:
   - images
   - library
