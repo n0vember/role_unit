@@ -24,6 +24,7 @@ usage() {
   echo "usage : ${my_name} [ -v|--verbose ] [ -h|--help ] ROLE_NAME ...
   creates a ROLE_NAME directory in the current directory, with a dummy role and unit tests embeded.
   if multiple role names are specified a role directory will be created for each.
+      -d|--dir : create role in directory given as parameter
   -v|--verbose : activates verbose mode
      -h|--help : displays this help" >&2
   exit 1
@@ -45,48 +46,58 @@ read_link() {
 }
 
 create_an_ansible_role() {
-  local role_name=$1
+  local role_dir=$1
+  local role_name=$2
   # Create empty role
-  mkdir ${verbose_flag} -p ${role_name}/{,tasks,meta}
-  [ ! -f ${role_name}/tasks/main.yml ] && cp ${verbose_flag} ${role_unit_dir}/role_files/tasks ${role_name}/tasks/main.yml
+  mkdir ${verbose_flag} -p "${role_dir}"/${role_name}/{,tasks,meta}
+  [ ! -f "${role_dir}"/${role_name}/tasks/main.yml ] && cp ${verbose_flag} ${role_unit_dir}/role_files/tasks "${role_dir}"/${role_name}/tasks/main.yml
   # Dependencies to make role usable by ansible-galaxy
-  [ ! -f ${role_name}/meta/main.yml ] && cp ${verbose_flag} ${role_unit_dir}/role_files/meta ${role_name}/meta/main.yml
+  [ ! -f "${role_dir}"/${role_name}/meta/main.yml ] && cp ${verbose_flag} ${role_unit_dir}/role_files/meta "${role_dir}"/${role_name}/meta/main.yml
 }
 
 make_directory_testable() {
-  local role_name=$1
+  local role_dir=$1
+  local role_name=$2
   # Testing environment
-  mkdir ${verbose_flag} -p ${role_name}/tests
-  cp ${verbose_flag} ${role_unit_dir}/tools/bash_unit ${role_name}/tests
-  cp ${verbose_flag} -r ${role_unit_dir}/lib ${role_name}/tests
-  [ ! -f ${role_name}/tests/ansible.cfg ] && cp ${verbose_flag} ${role_unit_dir}/tools/ansible.cfg ${role_name}/tests
-  [ ! -f ${role_name}/tests/tests_${role_name} ] && cp ${verbose_flag} ${role_unit_dir}/tools/tests ${role_name}/tests/tests_${role_name}
-  [ ! -f ${role_name}/.gitlab-ci.yml ] \
-    && cp ${verbose_flag} ${role_unit_dir}/tools/gitlab-ci.yml ${role_name}/.gitlab-ci.yml \
-    && sed -i -e "s:ROLE_NAME:${role_name}:g" ${role_name}/.gitlab-ci.yml
+  mkdir ${verbose_flag} -p "${role_dir}"/${role_name}/tests
+  cp ${verbose_flag} ${role_unit_dir}/tools/bash_unit "${role_dir}"/${role_name}/tests
+  cp ${verbose_flag} -r ${role_unit_dir}/lib "${role_dir}"/${role_name}/tests
+  [ ! -f "${role_dir}"/${role_name}/tests/ansible.cfg ] && cp ${verbose_flag} ${role_unit_dir}/tools/ansible.cfg "${role_dir}"/${role_name}/tests
+  [ ! -f "${role_dir}"/${role_name}/tests/tests_${role_name} ] && cp ${verbose_flag} ${role_unit_dir}/tools/tests "${role_dir}"/${role_name}/tests/tests_${role_name}
+  [ ! -f "${role_dir}"/${role_name}/.gitlab-ci.yml ] \
+    && cp ${verbose_flag} ${role_unit_dir}/tools/gitlab-ci.yml "${role_dir}"/${role_name}/.gitlab-ci.yml \
+    && sed -i -e "s:ROLE_NAME:${role_name}:g" "${role_dir}"/${role_name}/.gitlab-ci.yml
 }
 
 explain() {
+  local role_dir=$1
+  local role_name=$2
   cat <<EOF
-$1 role created. Go in $1 directory and...
-  Start testing now with the following command:
-  RU_ENV_IMAGE=debian9 tests/bash_unit tests/tests_$1
-  Look for help in tools/tests_tuto file in the repository and run it:
-  RU_ENV_IMAGE=centos7 tests/bash_unit tools/tests_tuto
+${role_name} role created. Go in ${role_name} directory and start testing now with the following command:
+    cd "${role_dir}"
+    RU_ENV_IMAGE=debian9 tests/bash_unit tests/tests_${role_name}
+  Or look for help in tools/tests_tuto file in the repository and run it:
+    cd "${role_unit_dir}"
+    RU_ENV_IMAGE=centos7 tests/bash_unit tools/tests_tuto
   Change the image you use to match your needs and code your role.
 
 EOF
 }
 
 # Check parameters
-getopt -o vh --long verbose,help -n 'option parsing' -- "$@" > /dev/null
+getopt -o vhd: --long verbose,help,dir: -n 'option parsing' -- "$@" > /dev/null
 [ $? != 0 ] && usage "Failed parsing options."
 
 verbose_mode=0
 verbose_flag=
+role_dir=$(pwd)
 
 while true; do
   case "$1" in
+    -d | --dir )
+      role_dir="${2}"
+      shift 2
+      ;;
     -v | --verbose )
       verbose_mode=1
       verbose_flag="-v"
@@ -103,14 +114,13 @@ done
 [ $# -lt 1 ] && usage "role name is mandatory"
 
 # determine where we create dir and where script really is
-role_dir=$(pwd)
 role_unit_dir=$(dirname $(read_link $0))
 
 while [ $# -ge 1 ]
 do
   role_name=$(echo "$1" | sed 's,/$,,')
-  create_an_ansible_role ${role_name}
-  make_directory_testable ${role_name}
-  [ ${verbose_mode} -eq 1 ] && explain ${role_name}
+  create_an_ansible_role "${role_dir}" ${role_name}
+  make_directory_testable "${role_dir}" ${role_name}
+  [ ${verbose_mode} -eq 1 ] && explain "${role_dir}" ${role_name}
   shift
 done
