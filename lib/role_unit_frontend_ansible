@@ -46,6 +46,13 @@ ru_frontend_init() {
       mkdir -p ${ru_dir}/group_vars
     fi
   fi
+  if [ ! -f ${ru_inventory} ] ; then
+    echo "[${ru_env_name}]" > ${ru_inventory}
+    local server
+    for server in $(ru_server_names) ; do
+      echo "${server}" >> ${ru_inventory}
+    done
+  fi
 
   ru_requirements
 

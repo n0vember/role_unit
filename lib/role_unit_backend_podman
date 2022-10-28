@@ -166,10 +166,6 @@ ru_init() {
     ru_info Information will be displayed after the tests to handle the debug environemnt.
     trap "ru_debug_info" EXIT
   fi
-  echo "[${ru_env_name}]" > ${ru_inventory}
-  for ru_server in $(ru_server_nums) ; do
-    echo ${ru_servers_names[${ru_server}]}
-  done >> ${ru_inventory}
 }
 
 ru_run() {
