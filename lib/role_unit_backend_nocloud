@@ -65,7 +65,8 @@ ru_init() {
     echo "RU_ENV_IMAGE=${ru_env_image}" >> ${ru_conf_file}
     ru_pull ${ru_env_image}
     ru_info starting virtual machines
-    nocloud run machines ${ru_env_image}:${ru_count}:role_unit >/dev/null 2>&1
+    #nocloud run machines ${ru_env_image}:${ru_count}:role_unit >/dev/null 2>&1
+    nocloud run machines ${ru_env_image}:${ru_count}:role_unit
     local ru_counter=1
     for ru_server in $(ru_server_nums)
     do
@@ -83,7 +84,7 @@ ru_init() {
     ru_info Information will be displayed after the tests to handle the debug environemnt.
     trap "ru_debug_info" EXIT
   fi
-  [ -L ${ru_inventory} ] || ln -s /usr/local/bin/nocloud ${ru_inventory}
+  #[ -L ${ru_inventory} ] || ln -s /usr/local/bin/nocloud ${ru_inventory}
 }
 
 ru_run() {

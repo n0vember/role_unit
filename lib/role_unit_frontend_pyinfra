@@ -1,0 +1,135 @@
+### Default environment
+
+#    (c) 2016-2022, n0vember <n0vember@half-9.net>
+#
+#    This file is part of role_unit.
+#
+#    role_unit is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    role_unit is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with role_unit.  If not, see <http://www.gnu.org/licenses/>.
+
+ru_pyinfra_script=${RU_PYINFRA_SCRIPT:-pyinfra.py}
+
+### Pyinfra management functions
+
+#ru_requirements() {
+#  if [ -f requirements.yml ] ; then
+#    ru_info fetching requirements
+#    ansible-galaxy install --force --roles-path ${ru_dir}/roles/ -r requirements.yml
+#  fi
+#}
+
+ru_frontend_init() {
+  if [ ${ru_debug} -eq 0 -o -z "${ru_conf}" ] ; then
+    echo "ru_inventory=${ru_dir}/inventory.py" >> ${ru_conf_file}
+    echo "ru_playbook=${ru_dir}/${ru_pyinfra_script}" >> ${ru_conf_file}
+    #echo "ru_roledir=${ru_dir}/roles" >> ${ru_conf_file}
+  fi
+  . ${ru_conf_file}
+
+  #mkdir -p ${ru_roledir}
+  #[ ! -L ${ru_roledir}/${ru_env_name} ] && ln -s $PWD/.. ${ru_roledir}/${ru_env_name}
+  #if [ -d ${ru_dir}/group_vars ] ; then
+  #  rm -r ${ru_dir}/group_vars
+  #fi
+  #if [ ! -L ${ru_dir}/group_vars ] ; then
+  #  if [ -d group_vars ] ; then
+  #    cp -r $PWD/group_vars ${ru_dir}/group_vars
+  #  else
+  #    mkdir -p ${ru_dir}/group_vars
+  #  fi
+  #fi
+  if [ ! -f ${ru_inventory} ] ; then
+    echo "${ru_env_name}=[" > ${ru_inventory}
+    local server
+    for server in $(ru_server_names) ; do
+      echo "  \"@${ru_env_cnx}/${server}\"," >> ${ru_inventory}
+    done
+    echo "]" >> ${ru_inventory}
+  fi
+
+  #ru_requirements
+}
+
+ru_run_frontend_command() {
+  echo "pyinfra ${ru_inventory} ${ru_playbook}"
+}
+
+ru_run_frontend_module() {
+  pyinfra ${ru_inventory} $@
+}
+
+#ru_facts() {
+#  local ru_server_names=$(ru_server_names)
+#  [ "$1" == "-n" ] && ru_server_names=$(ru_server_name $2) && shift 2
+#  ru_server_names=$(echo -e "${ru_server_names}" | tr "\n" ",")
+#  ansible -i ${ru_inventory} --connection=${ru_env_cnx} ${ru_server_names} -m setup
+#}
+
+#ru_fact() {
+#  local ru_servers
+#  [ "$1" == "-n" ] && ru_servers="-n $2" && shift 2
+#  local fact=$1
+#  ru_ansible_facts ${ru_servers} | grep "\"${fact}\"" | tr -d '" ,' | cut -d ":" -f 2
+#}
+
+#ru_fact_filter() {
+#  local ru_servers
+#  [ "$1" == "-n" ] && ru_server_names=$(ru_server_name $2) && shift 2
+#  ru_server_names=$(echo -e "${ru_server_names}" | tr "\n" ",")
+#  local filter=$1
+#  ansible -i ${ru_inventory} --connection=${ru_env_cnx} ${ru_server_names} -m setup -a "filter=${filter}"
+#}
+
+#ru_groups() {
+#  grep "^\[" ${ru_inventory} | tr -d "[]"
+#}
+
+#ru_group_servers() {
+#  local group_name=$1
+#  sed -e "/\[${group_name}\]/,/^\[/!d" ${ru_inventory} | grep -v "^\["
+#}
+
+#ru_group() {
+#  local group_name=$1
+#  shift
+#  local servers=$@
+#  local server group
+#  for server in ${servers}
+#  do
+#    sed -i -e "/^$(ru_server_name ${server})$/d" ${ru_inventory}
+#  done
+#  echo "[${group_name}]" >> ${ru_inventory}
+#  for server in ${servers}
+#  do
+#    echo "$(ru_server_name ${server})" >> ${ru_inventory}
+#  done
+#  for group in $(ru_groups)
+#  do
+#    [ -n "$(ru_group_servers ${group})" ] || sed -i -e "/^\[${group}\]/d" ${ru_inventory}
+#  done
+#}
+
+ru_pyinfra_install() {
+  if pyinfra --version >/dev/null 2>&1 ; then
+    true
+  else
+    ru_info installing missing pyinfra
+    pip install pyinfra >/dev/null
+  fi
+}
+
+export ru_id ru_dir ru_inventory ru_playbook ru_roledir
+
+ru_pyinfra_install
+
+# vim: syntax=sh

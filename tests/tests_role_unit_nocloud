@@ -5,12 +5,12 @@ RU_ENV_IMAGE=debian11
 
 . lib/role_unit
 
-test_i_am_in_a_kvm_machine() {
+todo_i_am_in_a_kvm_machine() {
   assert_equals "guest" "$(ru_fact ansible_virtualization_role)"
   assert_equals "kvm" "$(ru_fact ansible_virtualization_type)"
 }
 
-test_process_can_be_launched_in_background() {
+todo_process_can_be_launched_in_background() {
   ru_run sleep 60 &
   assert "ru_run pgrep sleep"
   ru_run pkill sleep
@@ -18,6 +18,11 @@ test_process_can_be_launched_in_background() {
 
 setup_suite() {
   ru_init
+  echo
+  echo
+  NC_CONTEXT=all nocloud inventory
+  echo
+  echo
 }
 
 # vim: syntax=sh

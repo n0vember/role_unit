@@ -1,0 +1,38 @@
+#!/usr/bin/env bash_unit
+
+[ -z "${RU_ENV_IMAGE}" ] && export RU_ENV_IMAGE=debian11
+export RU_FRONTEND=pyinfra
+. lib/role_unit
+
+test_pyinfra_is_available() {
+  assert "pyinfra --version"
+}
+
+test_i_can_run_command_on_the_container() {
+  assert "ru_run_frontend_module exec -- echo toto"
+}
+
+test_i_can_make_an_pyinfra_run_over_my_container() {
+  assert "ru_run_frontend"
+}
+
+setup_suite() {
+  ru_init
+  create_script
+}
+
+create_script() {
+  cat > ${ru_playbook} <<EOF
+from pyinfra.operations import apt
+
+apt.packages(
+    name="Ensure iftop is installed",
+    packages=["iftop"],
+    update=True,
+    _sudo=True,
+)
+EOF
+  chmod +x ${ru_playbook}
+}
+
+# vim: syntax=sh
