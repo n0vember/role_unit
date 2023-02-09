@@ -18,6 +18,7 @@
 ru_env_cnx="docker"
 ru_env_docker_repo="registry.gitlab.com/role_unit/role_unit_containers"
 ru_notmpfs=${RU_NOTMPFS:-0}
+ru_docker_shared=${RU_DOCKER_SHARED:-0}
 
 ### User environment
 
@@ -105,6 +106,10 @@ ru_init() {
   local ru_capacity="--cap-add=SYS_ADMIN"
   ru_test_file=$(basename ${BASH_ARGV[0]})
   ru_host_needs_privileged && ru_capacity="--privileged"
+  if [ ${ru_docker_shared} eq 1 ] ; then
+    local ru_shared_dir=$(mktemp --directory --tmpdir=${ru_dir})
+    local ru_shared_directive="-v ${ru_shared_dir}:/workdir/shared"
+  fi
   local ru_tmpfs_option
   if [ ${ru_notmpfs} -eq 0 ] ; then ru_tmpfs_option="--tmpfs /tmp --tmpfs /run" ; fi
   ru_info searching for running containers in debug mode for ${ru_test_file} test file
@@ -144,6 +149,7 @@ ru_init() {
         --cgroupns="host" \
         ${ru_tmpfs_option} \
         -v /sys/fs/cgroup:/sys/fs/cgroup \
+        ${ru_shared_directive} \
         --name=${ru_server_name} \
         --hostname=${ru_server_name} \
         --label "role_unit=true" \
