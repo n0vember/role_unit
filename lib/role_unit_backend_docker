@@ -106,7 +106,7 @@ ru_init() {
   local ru_capacity="--cap-add=SYS_ADMIN"
   ru_test_file=$(basename ${BASH_ARGV[0]})
   ru_host_needs_privileged && ru_capacity="--privileged"
-  if [ ${ru_docker_shared} eq 1 ] ; then
+  if [ ${ru_docker_shared} -eq 1 ] ; then
     local ru_shared_dir=$(mktemp --directory --tmpdir=${ru_dir})
     local ru_shared_directive="-v ${ru_shared_dir}:/workdir/shared"
   fi
