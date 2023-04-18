@@ -172,13 +172,13 @@ There is only one mandatory environment variable, which is RU_ENV_IMAGE. It defi
 * debian 11 (bullseye)
 * debian 10 (buster)
 * debian 9 (stretch)
-* debian 8 (jessie)
+* ubuntu 22.04
+* ubuntu 20.04
+* ubuntu 18.04
 * centos 8
-* centos 7
-* centos 6
 * archlinux
 
-This list is completed by some additional containers. For instance the '_cached' containers where package manager as a cache buitin to install package whithout extra steps (cache is being cleaned in standard container to reduce image size). Full list of those containers can be found in the https://gitlab.com/role_unit/role_unit_containers/container_registry[container registry of role_unit_containers repository].
+This list is completed by some additional containers. For instance the '_cached' containers where package manager has a cache buitin to install package whithout extra steps (cache is being cleaned in standard container to reduce image size). Full list of those containers can be found in the https://gitlab.com/role_unit/role_unit_containers/container_registry[container registry of role_unit_containers repository].
 
 role_unit behaviour can be changed using environment variables:
 
