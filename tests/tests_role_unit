@@ -45,6 +45,15 @@ test_ru_assert_with_timeout_succeeds_if_time_is_under_limit() {
   assert "ru_run_with_timeout -t 2 -n 0 test -f ${test_file}"
 }
 
+test_i_can_get_server_name_from_num() {
+  assert_equals "$(ru_run -n 0 hostname)" "$(ru_server_name 0)"
+}
+
+test_i_can_get_server_num_from_name() {
+  local server_name=$(ru_run -n 0 hostname)
+  assert_equals "0" "$(ru_server_num ${server_name})"
+}
+
 setup_suite() {
   ru_init
   ru_run_frontend verbose

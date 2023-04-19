@@ -78,7 +78,7 @@ ru_uuid() {
 ### Servers management functions
 
 ru_server() {
-  local ru_num=$(ru_server_num $1)
+  local ru_num=$(ru_server_num_int $1)
   echo ru_${ru_env_name}_${ru_num}
 }
 
@@ -98,7 +98,7 @@ ru_server_nums() {
   done
 }
 
-ru_server_num() {
+ru_server_num_int() {
   local ru_num="$1"
   echo "${ru_num}"
 }
@@ -160,6 +160,18 @@ ru_run_frontend() {
     ru_info applying automation
   fi
   assert "$(ru_run_frontend_command)"
+}
+
+ru_server_num() {
+  local server_name="$1"
+  local server_num=0
+  while [ ${server_num} -lt ${ru_count} ] ; do
+    if [ "$(ru_server_name ${server_num})" == "${server_name}" ] ; then
+      echo ${server_num}
+      break
+    fi
+    server_num=$((server_num+1))
+  done
 }
 
 [ -f lib/role_unit_frontend_${ru_frontend} ] && . lib/role_unit_frontend_${ru_frontend} || ru_usage "specified frontend '${ru_frontend}' does not exist"
