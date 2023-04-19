@@ -41,6 +41,12 @@ centos8:
 archlinux:
   extends: .distribution_testing
 
+ubuntu2204:
+  extends: .distribution_testing
+
+ubuntu2004:
+  extends: .distribution_testing
+
 inventory:
   extends: .all
   script:
